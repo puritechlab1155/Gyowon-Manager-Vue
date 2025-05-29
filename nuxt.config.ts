@@ -2,14 +2,21 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   modules: [
-    ['@nuxtjs/tailwindcss', {
-      configPath: 'tailwind.config.js'
-    }]
+    [
+      '@nuxtjs/tailwindcss',
+      {
+        configPath: 'tailwind.config.js',
+      },
+    ],
   ],
   devtools: { enabled: true },
-  css: [
-    '~/assets/css/main.css', 
-  ],
+  css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      backendUrl: 'http://localhost:8000', //TODO for local development,
+      frontendUrl: 'http://localhost:3000', //TODO for local development
+    },
+  },
   vite: {
     server: {
       watch: {
@@ -22,4 +29,4 @@ export default defineNuxtConfig({
       },
     },
   },
-})
+});
