@@ -1,5 +1,5 @@
 <template>
-    <div class="tab-wrap drop-shadow flex bg-[#FEFEFE] pl-10 pr-10 pt-1 text-center rounded-[12px] max-lg:rounded-none max-lg:w-full">
+    <div class="tab-wrap drop-shadow flex bg-[#FEFEFE] pl-10 pr-10 pt-1 text-center rounded-[12px] max-2xl:self-start max-lg:rounded-none max-lg:w-full">
         <div class="tab-box max-xl:flex-1">
             <button
                 v-for="(tab, index) in tabs"
@@ -44,7 +44,7 @@ const props = defineProps({
         gap: 150px;
     }
     .tab-box button {
-        flex: 0 0 15%;
+        flex: 0 0 25%;
         text-align: center;
     }
     .tab-wrap {
@@ -52,29 +52,15 @@ const props = defineProps({
     }
 }
 
-/* max-md: 화면 너비가 767.98px 이하일 때 */
-@media (max-width: 767.98px) {
-    .tab-box {
-        gap: 100px;
-    }
-    .tab-box button {
-        flex: 0 0 20%;
-        text-align: center;
-    }
-}
-
 /* max-sm: 화면 너비가 639.98px 이하일 때 */
 @media (max-width: 639.98px) {
     .tab-box {
-        gap: 10px;
+        gap: 50px;
     }
-    .tab-box button {
-        flex: 0 0 25%;
-        text-align: center;
-    }
+
     .tab-wrap {
-        padding-left: 5px;
-        padding-right: 5px;
+        padding-left: 0px;
+        padding-right: 0px;
     }
 }
 </style>

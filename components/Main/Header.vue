@@ -80,18 +80,27 @@
                             </div>
                         </div>
                         <!-- 오른쪽 버튼 -->
-                        <div id="right-button" class="flex gap-2 pr-8 max-xl:pr-4 max-sm:gap-0 items-center">
-                            <NuxtLink to="/login" class="text-sm max-lg:px-3 px-5 py-2.5 text-white bg-[#2B5BBB] rounded-lg hover:bg-[#1E4799] transition lg:block hidden">
+                        <div 
+                        id="right-button" 
+                        class="flex gap-2 pr-8 max-xl:pr-4 max-sm:gap-0 items-center">
+                            <button 
+                                v-if="!isLoginPage"
+                                @click="handleLogout" 
+                                class="text-sm max-lg:px-3 px-5 py-2.5 text-white bg-[#2B5BBB] rounded-lg hover:bg-[#1E4799] transition lg:block hidden">
                                 로그아웃
-                            </NuxtLink>
+                            </button>
                             <button @click="$router.back()"
+                                v-if="!isLoginPage"
                                 class="text-sm max-lg:px-3 px-5 py-2.5 text-[#292929] bg-[#F5F5F5] rounded-lg hover:bg-[#ECECEC] transition-all lg:block hidden">
                                 뒤로가기
                             </button>
                             <NuxtLink to="/" class="text-sm max-lg:px-3 px-5 py-2.5 text-[#292929] bg-[#F5F5F5] rounded-lg hover:bg-[#ECECEC] transition-all lg:block hidden">
                                 홈페이지로 가기
                             </NuxtLink>
-                            <NuxtLink to="/login" class="lg:hidden block">
+                            <NuxtLink 
+                                v-if="!isLoginPage" 
+                                click="handleLogout"
+                                class="lg:hidden block">
                                 <svg width="24" class="w-7 h-7"  height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" alt="로그아웃">
                                     <path d="M5 21C4.45 21 3.97933 20.8043 3.588 20.413C3.19667 20.0217 3.00067 19.5507 3 19V5C3 4.45 3.196 3.97933 3.588 3.588C3.98 3.19667 4.45067 3.00067 5 3H12V5H5V19H12V21H5ZM16 17L14.625 15.55L17.175 13H9V11H17.175L14.625 8.45L16 7L21 12L16 17Z" fill="#292929"/>
                                 </svg>
@@ -174,6 +183,17 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router';
+import { useAuth } from '../../composables/useAuth'
+
+const auth = await useAuth()
+const route = useRoute();
+const isLoginPage = computed(() => route.path === '/login');
+
+function handleLogout() {
+    auth.logout()
+}
+
 
 const dropdownOpen = ref(false)
 const currentBannerIndex = ref(0)

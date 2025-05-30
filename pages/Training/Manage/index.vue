@@ -1,6 +1,6 @@
 <template>
     <div class="pt-5 pb-5 max-lg:flex max-lg:flex-col-reverse">
-        <div class="w-full flex items-center justify-between max-lg:mt-[20px] max-2xl:flex-col max-2xl:items-stretch max-2xl:gap-5 max-lg:flex-col-reverse">
+        <div class="top w-full flex items-center justify-between max-lg:mt-[15px] max-2xl:flex-col max-2xl:items-stretch max-2xl:gap-5 max-lg:flex-col-reverse">
             <!-- left-content -->
             <TrainingTab :tabs="tabs" :selectedTab="selectedTab" @update:selectedTab="val => selectedTab = val" />
             <div v-if="selectedTab === 'academy'"></div>
@@ -8,144 +8,21 @@
             <div id="selectedFilters" class="flex flex-wrap gap-2 mt-2 block lg:hidden"></div>
             
             <!-- right-content (탭들) -->
-            <div class="right-content flex justify-end text-lg max-lg:space-x-0 max-2xl:space-x-1 space-x-2 max-2xl:self-end max-lg:justify-between max-lg:w-full">
-                <div class="flex justify-between space-x-2 max-2xl:space-x-1 max-lg:hidden">
-                    <DropYear v-model="selectedYear" />
-                    <DropSemester v-model="selectedSemester" />
-                    <div class="relative dropdown w-[85px]">
-                        <button
-                            class="dropdown-button bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] py-2 pr-2 px-2 rounded-md focus:outline-none focus:border-[#2B5BBB] h-[50px] w-full flex justify-between items-center">
-                            <span class="selected-option">직무</span>
-                            <svg class="w-5 h-5 text-[#292929]" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <!-- 드롭다운 옵션 -->
-                        <div
-                            class="dropdown-menu absolute left-0 w-full bg-[#FAFAFA] border border-[#DBDEE3] rounded-md shadow-lg hidden max-h-[250px] overflow-y-auto">
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                선택</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                서울</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                경기</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                자율</div>
-                        </div>
-                    </div>
-                    <div class="relative dropdown w-[230px]">
-                        <button class="dropdown-button bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] py-2 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] h-[50px] w-full flex justify-between items-center ">
-                            <span class="selected-option">과정명</span>
-                            <svg class="w-5 h-5 text-[#292929]" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <!-- 드롭다운 옵션 -->
-                        <div
-                            class="dropdown-menu absolute left-0 w-full bg-[#FAFAFA] border border-[#DBDEE3] rounded-md shadow-lg hidden max-h-[250px] overflow-y-auto ">
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                선택</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                웰빙초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                필라테스초중급(월,수 강좌)</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라틴심화 룸바</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                모던심화</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라틴2급자격 자이브</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                모던2급자격 퀵스텝</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라인댄스고급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라인댄스심화</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라인댄스중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                꿈을펼치는 라인댄스초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                꿈을펼치는 라틴초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                꿈을펼치는 모던초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                꿈을펼치는 라틴초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                꿈을펼치는 모던초중급</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                라틴2급자격</div>
-                        </div>
-                    </div>
-                    <div class="relative dropdown w-[140px]">
-                        <button
-                            class="dropdown-button bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] py-2 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] h-[50px] w-full flex justify-between items-center ">
-                            <span class="selected-option">교육장소</span>
-                            <svg class="w-5 h-5 text-[#292929]" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <!-- 드롭다운 옵션 -->
-                        <div
-                            class="dropdown-menu absolute left-0 w-full bg-[#FAFAFA] border border-[#DBDEE3] rounded-md shadow-lg hidden max-h-[250px] overflow-y-auto">
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                연촌초</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                명원초</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                동구로초</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                남수원중</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                서울디자인고</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                오금고</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                창동고</div>
-                            <div
-                                class="dropdown-item px-3 py-3 cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                상계고</div>
-                        </div>
-                    </div>
+            <div class="right-content flex justify-end text-lg gap-2 max-2xl:self-end max-lg:justify-between max-lg:w-full">
+                <div class="flex justify-between gap-2 max-lg:hidden">
+                    <DropYear v-model="selectedYear"/>
+                    <DropSemester v-model="selectedSemester"/>
+                    <DropPosition v-model="selectedPosition"/>
+                    <DropCourse v-model="selectedCourse"/>
+                    <DropEduPlace v-model="selectedEduPlace"/>
                 </div>
                 <div
-                    class=" flex justify-between items-center space-x-2 max-lg:space-x-0 max-lg:grid max-lg:grid-cols-5 max-lg:gap-2 max-lg:w-full">
-                    <SearchBar/>
-                    <div class="w-full max-lg:col-span-1 hidden max-lg:block">
-                        <button id="filterButton"
+                    class=" flex justify-between items-center max-lg:grid max-lg:grid-cols-5 max-lg:gap-2 max-lg:w-full">
+                    <div class="max-lg:col-span-4 w-full">
+                        <SearchBar/>
+                    </div>
+                    <div class="filter hidden max-lg:block">
+                        <button id="filterButton w-full max-lg:col-span-1 "
                             class="text-[#202020] flex justify-between items-center px-1 py-3 max-sm:py-2 w-full rounded-md bg-[#ECECEC]">
                             <div class="w-14 text-center min-w-[30px]">필터</div>
                             <img class="w-8 h-6" src="../../../assets/img/filter.png" alt="필터 아이콘" />
@@ -158,74 +35,36 @@
             <!-- left-content -->
             <div class="left-content flex items-center justify-between max-sm:justify-start gap-2">
             <!-- <button id="selectAllBtn" class="left-content flex items-center justify-center gap-2 pl-5 pr-5 rounded-lg focus:outline-none whitespace-nowrap"> -->
-            <button id="selectAllBtn" class="left-content flex items-center justify-center gap-2 pl-0 lg:pl-5 pr-5 rounded-lg focus:outline-none whitespace-nowrap">
-
-                <input type="checkbox" id="selectAllCheckbox"
-                    class="w-5 h-5 flex-shrink-0 appearance-none border border-[#2B5BBB] rounded-sm bg-[#FEFEFE] relative align-middle
-                    checked:bg-[#2B5BBB] checked:border-[#2B5BBB]
-                    checked:after:content-['✓'] checked:after:text-white
-                    checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 
-                    checked:after:-translate-x-1/2 checked:after:-translate-y-1/2
-                    checked:after:text-[16px]
-                    self-center" />
-
-                <span id="selectAllText"
-                    class="text-[18px] text-[#2B5BBB] max-sm:text-sm font-semibold leading-[1]">
-                    전체선택
-                </span>
-            </button>
-            <div class="relative dropdown w-[120px]">
-                <button
-                    class="dropdown-button w-full bg-[#FFFFFF] border border-[1px] border-[#DBDEE3] focus:border-[#2B5BBB] text-[#727272] py-2 px-3 pr-2 max-sm:py-2.5 rounded-md focus:outline-none flex justify-between items-center gap-0">
-                    <span
-                        class="selected-option text-[18px] text-[#727272] pr-2 py-0.5 max-sm:pr-0 whitespace-nowrap max-sm:text-sm">과정상태</span>
-                    <svg class="w-5 h-5 text-[#292929] flex-shrink-0" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <!-- 드롭다운 옵션 -->
-                <div
-                    class="dropdown-menu absolute left-0 w-full bg-[#FAFAFA] border border-[#DBDEE3] rounded-md shadow-lg hidden max-h-[250px] overflow-y-auto">
-                    <div
-                        class="dropdown-item px-3 py-2 cursor-pointer text-[#727272] text-[16px] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                        접수중</div>
-                    <div
-                        class="dropdown-item px-3 py-3 truncate cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                        접수마감</div>
-                    <div
-                        class="dropdown-item px-3 py-3 truncate cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                        과정종료</div>
-                </div>
-            </div>
-            <button
-                class="bg-[#2B5BBB] text-[18px] text-[#EDF3FF] flex items-center justify-center max-sm:text-sm border border-[#2B5BBB] px-6 py-2.5 max-xl:px-5 rounded-lg hover:bg-[#648DDF] focus:outline-none whitespace-nowrap">
-                일괄적용
-            </button>
+            <CheckboxAll
+                :modelValue="isAllSelected"
+                @update:modelValue="toggleSelectAll"
+            />          
+            <DropStatus v-model="selectedStatus"/>
+            <BtnUpdate @click="onApply" />
             </div>
             <!-- right-content (탭들) -->
-            <div class="right-content flex justify-end text-lg space-x-2 max-sm:justify-start">
-                <button onclick="window.location.href='training-create.html'"
-                    class="bg-[#EDF3FF] text-[#2B5BBB] text-[18px] max-sm:text-sm max-sm:py-2.5 px-6 py-2 rounded-lg hover:bg-[#D3E1FB] border border-[#2B5BBB] focus:outline-none whitespace-nowrap">
-                    연수 등록하기
-                </button>
+            <div class="right-content flex justify-end max-sm:justify-start">
+                <BtnCreate class="btn" @click="goToTrainingCreate">연수 등록하기</BtnCreate>
             </div>
         </div>
     </div>
-    <p class="mt-4 text-gray-700">선택된 년도: {{ selectedYear }}</p>
+    <!-- <p class="mt-4 text-gray-700">선택된 년도: {{ selectedYear }}</p>
     <p class="mt-4 text-gray-700">선택된 학기: {{ selectedSemester }}</p>
+    <p class="mt-4 text-gray-700">선택된 직무: {{ selectedPosition }}</p>
+    <p class="mt-4 text-gray-700">선택된 과정명: {{ selectedCourse }}</p>
+    <p class="mt-4 text-gray-700">선택된 교육장소: {{ selectedEduPlace }}</p> -->
     <div class="list-wrap w-full flex flex-col gap-10 overflow-x-auto">
         <div
             class="list-box flex justify-between gap-3 md:min-w-[1024px] max-md:flex-col max-sm:p-3 bg-gray-100 p-5 bg-white rounded-xl shadow border border-[#E3E6EA]">
             <div class="w-[2%]">
-                <input type="checkbox" class="check-target font-semibold w-5 h-5 mt-2 appearance-none border border-[#2B5BBB] rounded-sm bg-[#FEFEFE] relative align-middle
-                    checked:bg-[#2B5BBB] checked:border-[#2B5BBB]
-                    checked:after:content-['✓'] checked:after:text-white
-                    checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 
-                    checked:after:-translate-x-1/2 checked:after:-translate-y-1/2
-                    checked:after:text-[16px]
-                    self-center" />
+                <div v-for="item in items" :key="item" class="mt-2">
+                    <CheckboxItem
+                        v-for="item in items"
+                        :key="item"
+                        :modelValue="selectedItems.includes(item)"
+                        @update:modelValue="(checked) => toggleItem(item, checked)"
+                    />
+                </div>
             </div>
             <div class="w-[98%] max-sm:w-full">
                 <div class="flex items-start justify-between gap-5">
@@ -247,32 +86,7 @@
 
                     <!-- 우측 드롭다운 및 버튼 -->
                     <div class="flex items-center gap-2 max-sm:flex-col">
-                        <div class="relative dropdown w-[120px] max-sm:w-[100px]">
-                            <button
-                                class="dropdown-button w-full bg-[#FFFFFF] border border-[1px] border-[#DBDEE3] focus:border-[#2B5BBB] text-[#727272] py-2 max-sm:px-2 px-3 pr-2 max-sm:py-2.5 rounded-md focus:outline-none flex justify-between items-center gap-0">
-                                <span
-                                    class="selected-option text-[18px] text-[#727272] pr-2 max-sm:pr-0 whitespace-nowrap max-sm:text-[16px] ">과정상태</span>
-                                <svg class="w-5 h-5 text-[#292929] flex-shrink-0"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <!-- 드롭다운 옵션 -->
-                            <div
-                                class="dropdown-menu absolute left-0 w-full bg-[#FAFAFA] border border-[#DBDEE3] rounded-md shadow-lg hidden max-h-[250px] overflow-y-auto">
-                                <div
-                                    class="dropdown-item px-3 py-2 cursor-pointer text-[#727272] text-[16px] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                    접수중</div>
-                                <div
-                                    class="dropdown-item px-3 py-3 truncate cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                    접수마감</div>
-                                <div
-                                    class="dropdown-item px-3 py-3 truncate cursor-pointer text-[#727272] hover:bg-[#E7F0FD] hover:text-[#292929] whitespace-nowrap">
-                                    과정종료</div>
-                            </div>
-                        </div>
+                        <DropStatus v-model="selectedStatus"/>
                         <div class="flex justify-between gap-2">
                             <button type="button"
                                 class="editModalBtn bg-[#FFF3E5] flex justify-center items-center align-middle hover:bg-[#FFECBA] p-3 rounded-lg">
@@ -350,7 +164,7 @@
                         class="bg-[#EFEFEF] flex justify-center items-center align-middle hover:bg-[#DDDDDD] p-2.5 rounded-lg"
                         id="toggle-icon">
                         <span class="inline-block align-middle">
-                            <img src="../../../assets/img/down-arrow.png" alt="토글 아이콘" class="w-5 h-5" />
+                            <img src="img/down-arrow.png" alt="토글 아이콘" class="w-5 h-5" />
                         </span>
                     </button>
                 </div>
@@ -749,19 +563,89 @@
 
 <script setup>
     import { useState } from '#app'
+    import { useRouter } from 'vue-router';
     import TrainingTab from '../../../components/Training/Tab.vue'
     import SearchBar from '~/components/SearchBar.vue'
     import DropYear from '~/components/Drop/Year.vue'
     import DropSemester from '~/components/Drop/Semester.vue'
+    import DropPosition from '~/components/Drop/Position.vue'
+    import DropCourse from '~/components/Drop/Course.vue'
+    import DropEduPlace from '~/components/Drop/EduPlace.vue'
+    import DropStatus from '~/components/Drop/Status.vue'
+    import BtnCreate from '../../../components/Btn/Create.vue';
+    import BtnUpdate from '../../../components/Btn/Update.vue'
+
+    import { ref, onMounted } from 'vue'
+    import { useCheckboxGroup } from '../../../composables/useCheckboxGroup'
+    import CheckboxAll from '~/components/Checkbox/All.vue'
+    import CheckboxItem from '~/components/Checkbox/Item.vue'
+
+    const selectedYear = ref('')
+    const selectedSemester = ref('')
+    const selectedPosition = ref('')
+    const selectedCourse = ref('')
+    const selectedEduPlace = ref('')
+    const selectedStatus = ref('')
+
     const selectedTab = ref('academy')
+
     const tabs = [
         { id: 'academy', label: '연수원' },
         { id: 'research', label: '연구회' }
     ]
 
-    const selectedYear = ref('')
-    const selectedSemester = ref('')
 
+    // ✅ 체크박스
+    const items = ref([])
+    const {
+        selectedItems,
+        isAllSelected,
+        toggleItem,
+        toggleSelectAll
+    } = useCheckboxGroup(items)
+
+    // 예시용 API
+    async function fetchTrainingItems() {
+        return ['연수1'] // 나중엔 axios 등으로 대체
+    }
+
+    fetchTrainingItems().then(data => {
+        items.value = data
+    })
+
+    // ✅ 일괄적용 추후에 작업
+    function onApply() {
+    // 버튼 클릭 시 처리할 로직
+        console.log('일괄적용 버튼 클릭됨')
+    }
+
+    // ✅ 페이지 타이틀 설정
     const pageTitle = useState('pageTitle')
     pageTitle.value = '연수관리'
+
+    // ✅ 연수등록 버튼 이동
+    const router = useRouter();
+    function goToTrainingCreate() {
+        router.push('/Training/Manage/Create');
+    }
+
+
 </script>
+
+
+<style scoped>
+    .btn {
+        padding-top: 0.75rem;
+        padding-right: 1.7rem;
+        padding-left: 1.7rem;
+        padding-bottom: 0.6rem;
+    }
+    @media (max-width: 639.9px) {
+        .left-content {
+            justify-content: start;
+        }
+        .right-content {
+            justify-content: start;
+        }
+    }
+</style>

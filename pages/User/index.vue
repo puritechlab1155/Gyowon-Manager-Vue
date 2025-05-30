@@ -9,17 +9,6 @@
                 <BtnCreate @click="goToUserCreate">회원 등록하기</BtnCreate>
             </div>
             <SearchBar :modelValue="searchQuery" @search="onSearch" />
-            <!-- <div class="search-wrap flex justify-between">
-                <input type="text" placeholder="성명, 연락처, 아이디, 학교명"
-                    class="search-input bg-[#FEFEFE] text-[#AFAFAF] placeholder-[#AFAFAF] max-sm:placeholder:text-sm border border-[#B0B0B0]
-                        focus:outline-none focus:border-[#2B5BBB] px-4 rounded-[8px] w-full max-lg:max-w-[750px] h-[50px]" />
-                <button
-                    class="bg-[#2B5BBB] w-16 py-2 px-3 max-sm:py-1 rounded-lg hover:bg-[#648DDF] focus:outline-none max-sm:rounded-tl-none max-sm:rounded-bl-none ">
-                    <img src="../../assets/img/search.png" alt="검색 아이콘"
-                        class="hidden max-sm:block h-6 w-6" />
-                    <span class=" text-[#EDF3FF] max-sm:hidden">검색</span>
-                </button>
-            </div> -->
         </div>
     </div>
     <UserTable :data="displayedData" :id="tableId" :headerId="tableHeaderId" @name-clicked="onNameClicked"/>

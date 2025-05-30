@@ -20,6 +20,7 @@ module.exports = {
         'max-md': { max: '767px' },  // md 미만
         'max-lg': { max: '1023px' }, // lg 미만
         'max-xl': { max: '1280px' }, // lg 미만
+        'max-2xl': { max: '1535px' },
         sm: '640px',
         md: '768px',
         lg: '1024px',

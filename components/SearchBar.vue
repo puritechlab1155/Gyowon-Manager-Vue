@@ -7,7 +7,7 @@
         @keyup.enter="handleSearch"
         class="search-input bg-[#FEFEFE] placeholder-[#AFAFAF] 
         border border-[#B0B0B0] focus:outline-none focus:border-[#2B5BBB]
-        px-4 py-3 rounded-[8px] w-full max-lg:max-w-[750px]
+        px-4 py-3 rounded-[8px] w-full max-lg:max-w-[800px]
         max-sm:rounded-tr-none max-sm:rounded-br-none "
     />
     <button
