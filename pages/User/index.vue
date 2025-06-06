@@ -298,7 +298,7 @@
                         number: startNumber - index,
                         userId: user.username,
                         name: user.name,
-                        type: user.office_id == 2 ? '교원' : '일반',
+                        type: user.office_id == "2" ? '교원' : '일반',
                         gender: user.gender,
                         birthDate: formatBirth(user.birth),
                         workArea: user.work_state || '-',
