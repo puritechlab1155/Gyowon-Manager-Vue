@@ -1,5 +1,4 @@
-// composables/useCheckboxGroup.js
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 export function useCheckboxGroup(itemsRef) {
     const selectedItems = ref([])
@@ -9,20 +8,22 @@ export function useCheckboxGroup(itemsRef) {
         selectedItems.value.length === itemsRef.value.length
     )
 
-    const toggleItem = (item) => {
-        const index = selectedItems.value.indexOf(item)
-        if (index > -1) {
+    const toggleItem = (itemNumber, checked) => {
+        const index = selectedItems.value.indexOf(itemNumber)
+        if (checked && index === -1) {
+            selectedItems.value.push(itemNumber)
+        } else if (!checked && index > -1) {
             selectedItems.value.splice(index, 1)
-        } else {
-            selectedItems.value.push(item)
         }
     }
 
-    const toggleSelectAll = () => {
-        if (isAllSelected.value) {
-            selectedItems.value = []
+    const toggleSelectAll = (checked) => {
+        if (checked) {
+            // 전체 선택: 모든 아이템의 number를 selectedItems에 추가
+            selectedItems.value = itemsRef.value.map(item => item.number)
         } else {
-            selectedItems.value = [...itemsRef.value]
+            // 전체 해제: selectedItems 배열 초기화
+            selectedItems.value = []
         }
     }
 

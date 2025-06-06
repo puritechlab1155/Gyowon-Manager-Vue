@@ -9,7 +9,7 @@
                         @close="isSidemenuOpen = false"/>
         <div id="main-content" class="ml-64 z-[500] max-xl:ml-0 transition-all duration-300 max-w-[1520px]"
             :class="isSidemenuOpen ? 'ml-64' : 'mx-auto'">
-            <div class="w-full min-h-screen px-6 pt-[70px]">
+            <div class="w-full min-h-screen px-6 pt-[70px] pb-[100px]">
                 <NuxtPage />
             </div>
         </div>

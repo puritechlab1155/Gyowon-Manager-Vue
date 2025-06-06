@@ -23,6 +23,7 @@
     .btn {
         padding-right: 1rem;
         padding-left: 1rem;
+        font-size: 16px;
     }
 }
 

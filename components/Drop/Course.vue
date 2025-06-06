@@ -5,7 +5,7 @@
         @click.outside="closeDropdown">
         <button 
             @click="toggleDropdown"
-            class="dropdown-button bg-[#FEFEFE] border border-[#DBDEE3] text-[#727272] py-2 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] h-[50px] w-full flex justify-between items-center ">
+            class="dropdown-button bg-[#FEFEFE] border border-[#DBDEE3] text-[#727272] py-3 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center ">
             <span class="selected-option">{{ selectedLabel }}</span>
             <svg class="w-5 h-5 text-[#292929]" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
@@ -85,5 +85,6 @@
 </script>
 
 <style scoped>
+
 
 </style>

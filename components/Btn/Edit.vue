@@ -1,6 +1,6 @@
 <template>
     <button
-    class="editModalBtn bg-[#FFF3E5] p-2 rounded-lg hover:bg-[#FFECBA]"
+    class="editModalBtn bg-[#FFF3E5] px-2.5 py-2 rounded-lg hover:bg-[#FFECBA]"
     @click="goToRoute"
     >
         <img src="@/assets/img/pen.png" alt="수정 아이콘" class="w-[22px] h-[22px]" />

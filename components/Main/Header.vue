@@ -4,7 +4,7 @@
             <div class="bg-white w-full mx-auto fixed">
                 <div class="flex justify-between items-center h-16">
                     <!-- 왼쪽 영역 -->
-                    <div class="w-64 pr-36 max-2xl:pr-4 max-2xl:w-40 max-sm:w-36 flex justify-start h-16 items-center gap-x-4 max-xl:gap-x-2 pl-8 max-xl:pl-4">
+                    <div class="w-64 pr-36 max-2xl:pr-4 max-2xl:w-40 max-sm:w-36 flex justify-start h-16 items-center gap-2 max-xl:gap-1 max-sm:pr-2 pl-8 max-xl:pl-4">
                         <ul>
                             <li class="flex flex-col items-center">
                                 <!-- 스위치 -->
@@ -25,7 +25,7 @@
                     <!-- 오른쪽 영역 -->
                     <div class="flex justify-between items-center w-full">
                         <div class="flex items-center"> 
-                            <h1 class="font-normal paperlogy text-[#2B5BBB] max-md:font-normal rounded-lg pl-6 h1-title max-xl:pl-0 max-sm:text-[20px] tracking-tighter">{{ pageTitle }}</h1>
+                            <h1 class="title font-normal paperlogy text-[#2B5BBB] max-md:font-normal rounded-lg pl-6 h1-title max-xl:pl-0 max-sm:text-[20px] tracking-tighter">{{ pageTitle }}</h1>
                         </div>
                         <!-- pc전용 배너 -->
                         <div class="my-div relative flex items-center max-lg:justify-end w-[460px] h-10 border border-[2px] border-gray-200 rounded-xl bg-white banner-border max-md:hidden px-3 justify-between ">
@@ -359,4 +359,10 @@ const bannerItems = ref([
         }
     }
 
+    @media (max-width: 479.9px) {
+        .title {
+            font-size: 21px;
+            letter-spacing: -1px;
+        }
+    }
 </style>

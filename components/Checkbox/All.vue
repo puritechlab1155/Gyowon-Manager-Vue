@@ -8,7 +8,9 @@
         />
         <div
         class="w-5 h-5 flex items-center justify-center rounded-sm border border-[#2B5BBB] bg-white
-                peer-checked:bg-[#2B5BBB] peer-checked:border-[#2B5BBB] relative"
+                peer-checked:bg-[#2B5BBB] peer-checked:border-[#2B5BBB]
+                peer-checked:after:content-['✓'] peer-checked:after:text-white
+                peer-checked:after:absolute peer-checked:after:right-0.1 peer-checked:after:top-0.4"
         >
         <svg
             class="hidden peer-checked:block w-4 h-4 text-white"

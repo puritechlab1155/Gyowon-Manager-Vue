@@ -1,17 +1,15 @@
 <template>
-    <div ref="dropdownRef" 
-        class="relative dropdown"
-        :style="{ width: props.width }" 
+    <div 
+        ref="dropdownRef" 
+        class="relative dropdown w-[120px]"
         @click.outside="closeDropdown">
-        <button
+            <button
             @click="toggleDropdown"
-            class="dropdown-button bg-[#FFFFFE] border border-[#DBDEE3] text-[#727272] py-3 px-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center"
+            class="dropdown-button bg-[#FFFFFE] border border-[#DBDEE3] text-[#727272] py-3 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center"
             type="button"
-            :style="{ height: props.height }"
             >
             <span class="selected-option">{{ selectedLabel }}</span>
-            <svg 
-                class="w-5 h-5 text-[#292929]" 
+            <svg class="w-5 h-5 text-[#292929]" 
                 xmlns="http://www.w3.org/2000/svg" 
                 fill="none"
                 viewBox="0 0 24 24" 
@@ -37,6 +35,7 @@
     </div>
 </template>
 
+
 <script setup>
     import { ref, computed } from 'vue'
     import { onClickOutside } from '@vueuse/core'
@@ -44,23 +43,24 @@
     const isOpen = ref(false)
     const dropdownRef = ref(null)
 
-        const props = defineProps({
+    const props = defineProps({
         modelValue: {
             type: String,
             default: '',
         },
         options: {
             type: Array,
-            default: () => ['선택', '접수중', '접수마감', '과정종료'],
+            default: () => [
+                '선택',
+                '월요일', 
+                '화요일', 
+                '수요일',
+                '목요일',
+                '금요일', 
+                '토요일', 
+                '일요일', 
+            ],
         },
-        height: {
-            type: String,
-            default: '60px'
-        },
-        width: {
-            type: String,
-            default: '120px'
-        }
     })
 
     onClickOutside(dropdownRef, () => {
@@ -77,14 +77,14 @@
     }
 
     const selectedLabel = computed(() => {
-        return props.modelValue !== '' ? props.modelValue : '과정상태'
+        return props.modelValue !== '' ? props.modelValue : '요일'
     })
 
-
     const emit = defineEmits(['update:modelValue'])
-
 </script>
 
+
 <style>
+
 
 </style>

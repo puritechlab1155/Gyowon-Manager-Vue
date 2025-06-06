@@ -4,7 +4,7 @@
         @click.outside="closeDropdown">
         <button
             @click="toggleDropdown"
-            class="dropdown-button bg-[#FFFFFE] border border-[#DBDEE3] text-[#727272] py-2 pr-2 px-2 rounded-md focus:outline-none focus:border-[#2B5BBB] h-[50px] w-full flex justify-between items-center"
+            class="dropdown-button bg-[#FFFFFE] border border-[#DBDEE3] text-[#727272] py-3 pr-2 px-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center"
             type="button"
             >
             <span class="selected-option">{{ selectedLabel }}</span>

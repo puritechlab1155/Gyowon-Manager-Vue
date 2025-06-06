@@ -23,7 +23,7 @@
         <!-- 드롭다운 옵션 -->
         <div
             v-show="isOpen"
-            class="dropdown-menu absolute left-0 w-full bg-[#FEFEFE] border border-[#DBDEE3] rounded-md shadow-lg max-h-[250px] overflow-y-auto z-50"
+            class="dropdown-menu absolute py-3 left-0 w-full bg-[#FEFEFE] border border-[#DBDEE3] rounded-md shadow-lg max-h-[250px] overflow-y-auto z-50"
             >
             <div
                 v-for="(option, index) in options"
@@ -51,7 +51,7 @@
         },
         options: {
             type: Array,
-            default: () => ['선택', '접수중', '접수마감', '과정종료'],
+            default: () => ['선택', '대기', '확정', '취소', '연기', '연기금'],
         },
         height: {
             type: String,
@@ -77,7 +77,7 @@
     }
 
     const selectedLabel = computed(() => {
-        return props.modelValue !== '' ? props.modelValue : '과정상태'
+        return props.modelValue !== '' ? props.modelValue : '입금상태'
     })
 
 

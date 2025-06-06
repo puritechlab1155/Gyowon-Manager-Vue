@@ -670,11 +670,13 @@
     .subUl {
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
+        transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
     }
 
     .subUl.open {
-        max-height: 500px; /* 서브 메뉴 높이 맞게 조절 */
+        max-height: 500px;
+        padding-top: 0.25rem; 
+        padding-bottom: 0.25rem;
     }
 
     .mainLink.focused {

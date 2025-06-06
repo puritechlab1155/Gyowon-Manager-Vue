@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@vueuse/core": "^13.3.0",
+    "axios": "^1.9.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "nuxt": "^3.17.4",
