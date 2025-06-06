@@ -1,7 +1,6 @@
 <template>
     <!-- 사이드 메뉴 -->
     <div id="side-menu"
-
         ref="sideMenuInnerRef"
         class="fixed top-[64px] z-[600] overflow-y-auto scroll-hidden bg-[#FEFEFE] w-64 transition-transform duration-300 h-screen"
         :class="isSidemenuOpen ? 'translate-x-0' : '-translate-x-full'">

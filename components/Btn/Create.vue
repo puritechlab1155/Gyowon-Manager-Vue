@@ -2,7 +2,7 @@
     <button
         @click="$emit('click')"
         class="btn bg-[#EDF3FF] text-[#2B5BBB] 2xl:max-w-none
-        px-4 pt-3.5 pb-2.5 rounded-lg hover:bg-[#D3E1FB] border border-[#2B5BBB]
+        px-4 pt-3.6 pb-2.4 rounded-lg hover:bg-[#D3E1FB] border border-[#2B5BBB]
         focus:outline-none whitespace-nowrap"
         >
     <slot></slot>

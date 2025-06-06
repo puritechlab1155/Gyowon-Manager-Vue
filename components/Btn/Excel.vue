@@ -1,6 +1,6 @@
 <template>
     <button type="button" :data-target-table-id="targetTableId" :data-filename="filename"
-        class="excel-button object-contain box-content bg-[#117841] py-3 text-[#EDF3FF] flex items-center justify-center rounded-lg hover:bg-[#359F66] focus:outline-none whitespace-nowrap"
+        class="excel-button object-contain box-content bg-[#117841] pt-3.7 pb-2.3 text-[#EDF3FF] flex items-center justify-center rounded-lg hover:bg-[#359F66] focus:outline-none whitespace-nowrap"
         @click="handleClick">
         <img src="../../assets/img/exel.png" alt="엑셀 아이콘" class="w-5 h-5 mr-1 max-sm:mr-0 object-contain box-content" />
         <span class="text-[#EDF3FF] max-sm:text-sm block max-sm:hidden">엑셀 다운로드</span>

@@ -31,7 +31,7 @@
     const props = defineProps({
         placeholder: {
             type: String,
-            default: '성명, 연락처, 아이디, 직장명',
+            default: '성명, 연락처로 검색해주세요',
         },
         modelValue: {
             type: String,

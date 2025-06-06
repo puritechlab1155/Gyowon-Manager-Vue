@@ -11,15 +11,14 @@
             <SearchBar :modelValue="searchQuery" @search="onSearch" />
         </div>
     </div>
-    <UserTable :data="displayedData" :id="tableId" :headerId="tableHeaderId" @name-clicked="onNameClicked"/>
+    <UserTable :data="userData" :id="tableId" :headerId="tableHeaderId" @name-clicked="onNameClicked"/>
     <UserModal v-if="showModal" :user="selectedUser" @close="closeModal" />
-    <Pagination :currentPage="currentPage" 
-                :totalPages="displayedTotalPages"
-                @update:currentPage="val => currentPage = val" />
+    <Pagination v-model:currentPage="currentPage"
+                :totalPages="totalPages"/>
 </template>
 
 <script setup>
-    import { ref, computed, watch, onMounted } from 'vue'
+    import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useState } from '#imports'
     import { useRouter } from 'vue-router';
 
@@ -240,53 +239,149 @@
     // ])
 
 
+    // ✅ 데이터 변수
+    const userData = ref([])            // 현재 페이지 데이터
+    const totalItems = ref(0)           // 서버에서 받은 전체 사용자 수
+    const itemsPerPage = ref(15)        // 한 페이지 당 아이템 수 (서버 기준)
+
+    // ✅ 상태 변수들
+    const selectedTab = ref('tab1')     // 탭 (전체, 교원, 일반)
+    const searchQuery = ref('')          // 검색어
+    const currentPage = ref(1)          // 현재 페이지
+    const selectedUser = ref(null) 
+    const showModal = ref(false)      
+
+    // ✅ 탭 정보
+    const tabs = [
+        { id: 'tab1', label: '전체', office: null },
+        { id: 'tab2', label: '교원', office: 2 },
+        { id: 'tab3', label: '일반', office: 1 }
+    ]
+
+    // ✅  토큰 쿠키 가져오기 (Nuxt.js 등 환경 가정)
+    const token = useCookie('auth_token').value
+
+
+    // ✅ API 호출 함수 - 탭, 검색어, 페이지를 쿼리로 전달
+    const fetchUserData = async () => {
+        // 탭에 따른 office 파라미터
+        const office = tabs.find(tab => tab.id === selectedTab.value)?.office
+        
+        // 쿼리 파라미터 구성
+        const params = new URLSearchParams()
+        params.append('page', currentPage.value)
+        if (office !== null) {
+            params.append('office', office)
+        }
+        if (searchQuery.value.trim() !== '') {
+            params.append('filter[search]', searchQuery.value.trim())
+        }
+
+        const url = `http://localhost:8000/api/admin/users?${params.toString()}`
+
+        try {
+            const { data, error } = await useFetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                // 서버 응답에 맞춰서 data 변환
+                transform: (response) => {
+                    totalItems.value = response.meta?.total || 0
+                    itemsPerPage.value = response.meta?.per_page || 15
+
+                    const sortedData = response.data.sort((a, b) => b.id - a.id)
+                    const startNumber = totalItems.value - (currentPage.value - 1) * itemsPerPage.value
+                    
+                    // 사용자 데이터 가공
+                    return sortedData.map((user, index) => ({
+                        id: user.id,
+                        number: startNumber - index,
+                        userId: user.username,
+                        name: user.name,
+                        type: user.office_id == 2 ? '교원' : '일반',
+                        gender: user.gender,
+                        birthDate: formatBirth(user.birth),
+                        workArea: user.work_state || '-',
+                        educationOffice: user.office?.office_name || '-', 
+                        workplace: user.workplace_name || '-',
+                        establishmentType: user.establishment_type || '-',
+                        position: user.job_position || '-',
+                        major: user.major_subject || '-',
+                        contact: user.phone,
+                        email: user.email,
+                        address: `${user.address ?? ''} ${user.address_detail ?? ''}`.trim(),
+                    }))
+                }
+            })
+
+            if (error.value) {
+                console.error('❌ API 호출 실패:', error.value)
+                userData.value = []
+                totalItems.value = 0
+            } else {
+                userData.value = data.value || []
+                console.log('✅ API 응답:', data.value)
+            }
+        } catch (e) {
+            console.error('❌ API 호출 중 예외:', e)
+            userData.value = []
+            totalItems.value = 0
+        }
+    }
+
+
+    //✅ 생일 수정
     const formatBirth = (birth) => {
         if (!birth || birth.length !== 8) return birth
         return `${birth.slice(0, 4)}-${birth.slice(4, 6)}-${birth.slice(6)}`
     }
+    
+    // ✅ 총 페이지 계산 (서버 totalItems, itemsPerPage 기준)
+        const totalPages = computed(() => {
+        return Math.ceil(totalItems.value / itemsPerPage.value)
+    })
 
-    const userData = ref([])
 
-    const token = useCookie('auth_token').value;
 
-    const { data, error } = await useFetch('http://localhost:8000/api/admin/users', {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-        transform: (response) => {
-            // 👉 실제 유저 배열은 response.data.data
-            const users = response.data;
-
-            return users.map(user => ({
-            id: user.id,
-            userId: user.username,
-            name: user.name,
-            type: user.job_position ? '교원' : '일반',
-            gender: user.gender,
-            birthDate: formatBirth(user.birth), // YYYYMMDD → YYYY-MM-DD
-            workArea: user.work_state || '-',
-            educationOffice: '-', // office_name이 없으므로 고정
-            workplace: user.workplace_name || '-',
-            establishmentType: user.establishment_type || '-',
-            position: user.job_position || '-',
-            major: user.major_subject || '-',
-            contact: user.phone,
-            email: user.email,
-            address: `${user.address ?? ''} ${user.address_detail ?? ''}`.trim(),
-
-            }));
-        }
-    });
-
-    if (error.value) {
-        console.error('❌ API 호출 실패:', error.value);
-    } else {
-        console.log('✅ API 응답:', data.value); // 여기서 실제 가공된 데이터가 출력됨
-        userData.value = data.value;
+    // ✅ 검색 함수
+    function onSearch(value) {
+        searchQuery.value = value
+        currentPage.value = 1
     }
 
+    // ✅ 탭 클릭 시 (탭 변경 시 현재 페이지 1로 초기화)
+    function onTabChange(tabId) {
+        selectedTab.value = tabId
+        currentPage.value = 1
+    }
 
+    // ✅ 페이지 변경 함수
+    function onPageChange(page) {
+        if (page >= 1 && page <= totalPages.value) {
+            currentPage.value = page
+        }
+    }
 
+    // ✅ 페이지 타이틀 설정
+    const pageTitle = useState('pageTitle')
+        onMounted(async () => {
+            pageTitle.value = '회원관리'
+            fetchUserData();
+        
+            await nextTick()
+
+        // ✅ API 호출 트리거 : selectedTab, searchQuery, currentPage 변경 시 호출
+        watch([selectedTab, searchQuery, currentPage], () => {
+            fetchUserData()
+        }, { immediate: true })
+
+    })
+
+    // ✅ 회원등록 버튼 이동
+    const router = useRouter();
+    function goToUserCreate() {
+        router.push('/user/create');
+    }
 
     //✅ 엑셀 프린트를 위한 테이블 전달
     const tableId = 'targetTable';
@@ -297,27 +392,6 @@
         return `[${tabLabel}] 회원정보엑셀`
     })
 
-    // ✅ 탭 데이터
-    const tabs = [
-        { id: 'tab1', label: '전체' },
-        { id: 'tab2', label: '교원' },
-        { id: 'tab3', label: '일반' }
-    ]
-
-    //✅ 상태변수들
-    const selectedTab = ref('tab1')
-    const currentPage = ref(1)
-    const itemsPerPage = 10
-    const searchQuery = ref('')
-    const showModal = ref(false)
-    const selectedUser = ref(null)
-
-    // ✅ 검색 함수
-    function onSearch(value) {
-        console.log('검색 실행:', value) // 디버깅용
-        searchQuery.value = value
-        currentPage.value = 1
-    }
     // ✅ 회원정보 모달
     function onNameClicked(user) {
         console.log('User name clicked:', user);
@@ -325,7 +399,6 @@
         showModal.value = true
         console.log('showModal:', showModal.value);
     }
-
     function closeModal() {
         showModal.value = false
         selectedUser.value = null
@@ -339,78 +412,6 @@
             document.body.style.overflow = ''; // 또는 'auto'
         }
     });
-
-    // 1. 탭 필터링된 데이터
-    const filteredData = computed(() => {
-    if (selectedTab.value === 'tab1') return userData.value
-    if (selectedTab.value === 'tab2') return userData.value.filter(user => user.type === '교원')
-    if (selectedTab.value === 'tab3') return userData.value.filter(user => user.type === '일반')
-    return []
-    })
-
-
-    // 2. 탭 필터링 + 검색 필터링
-    const searchFilteredData = computed(() => {
-        let baseData = filteredData.value
-        
-        // 검색어가 없으면 탭 필터링된 데이터 그대로 반환
-        if (!searchQuery.value || searchQuery.value.trim() === '') {
-            return baseData
-        }
-
-        const query = searchQuery.value.toLowerCase().trim()
-        console.log('검색 필터링 실행:', query) // 디버깅용
-        
-        const filtered = baseData.filter(user => {
-            const matchName = user.name?.toLowerCase().includes(query)
-            const matchUserId = user.userId?.toLowerCase().includes(query)
-            const matchContact = user.contact?.toLowerCase().includes(query)
-            const matchWorkplace = user.workplace?.toLowerCase().includes(query)
-            
-            return matchName || matchUserId || matchContact || matchWorkplace
-        })
-        
-        console.log('필터링 결과:', filtered.length, '개') // 디버깅용
-        return filtered
-    })
-
-
-    // 3. 정렬 (최신순 - ID 기준 내림차순)
-    const sortedData = computed(() => {
-        return [...searchFilteredData.value].sort((a, b) => b.id - a.id)
-    })
-
-    // 4. 페이지네이션
-    const paginatedData = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage
-        return sortedData.value.slice(start, start + itemsPerPage)
-    })
-
-    // 5. 총 페이지 수
-    const totalPages = computed(() => {
-        return Math.ceil(searchFilteredData.value.length / itemsPerPage)
-    })
-
-    // 6. 최종 표시할 데이터와 페이지 수 (단순화)
-    const displayedData = computed(() => paginatedData.value)
-    const displayedTotalPages = computed(() => totalPages.value)
-
-    // 7. watch - 탭이나 검색어 변경시 첫 페이지로 이동
-    watch([selectedTab], () => {
-        currentPage.value = 1
-    })
-
-    // ✅ 페이지 타이틀 설정
-    const pageTitle = useState('pageTitle')
-        onMounted(() => {
-            pageTitle.value = '회원관리'
-    })
-
-    // ✅ 회원등록 버튼 이동
-    const router = useRouter();
-    function goToUserCreate() {
-        router.push('/user/create');
-    }
 
 
 </script>

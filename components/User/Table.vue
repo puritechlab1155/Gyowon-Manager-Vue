@@ -23,7 +23,7 @@
             <tbody class="rounded-[12px]">
                 <tr v-for="(row, index) in data" :key="row.id" 
                     class="text-[#727272] text-[18px] font-normal h-[70px] border-b border-gray-300">
-                    <td class="w-[4%]">{{ row.id }}</td>
+                    <td class="w-[4%]">{{ row.number }}</td>
                     <td class="w-[7%]">{{ row.userId }}</td>
                     <td class="w-[6%] text-[#2B5BBB]">
                         <span class="font-semibold hover:underline cursor-pointer" @click.prevent="handleNameClick(row)">{{ row.name }}</span>
