@@ -1,6 +1,6 @@
 <template>
     <div
-        class="list-box flex justify-between gap-3 md:min-w-[1024px] max-md:flex-col max-sm:p-3 bg-gray-100 p-5 bg-white rounded-xl shadow border border-[#E3E6EA]">
+        class="list-box flex justify-between gap-3 md:min-w-[1024apx] max-md:flex-col max-sm:p-3 bg-gray-100 p-5 bg-white rounded-xl shadow border border-[#E3E6EA]">
         <div class="w-[2%] mt-2">
         <CheckboxItem
             :checked="selectedItems.includes(data.number)"
@@ -11,8 +11,8 @@
         <div class="w-[98%] max-sm:w-full">
             <div class="flex items-start justify-between gap-5">
                 <div class="flex flex-col">
-                <div class="title-box flex items-center justify-start gap-2 max-sm:gap-1 max-sm:flex-col-reverse">
-                    <span class="paperlogy training-title font-medium text-[30px] max-sm:text-[25px] text-[#2B5BBB] text-[#292929]">
+                <div class="title-box flex items-center justify-start gap-2 max-lg:gap-1 max-lg:flex-col-reverse">
+                    <span class="title paperlogy training-title font-medium text-[30px] text-[#2B5BBB] text-[#292929]">
                     {{ data.title }}
                     </span>
                     <div class="flex justify-start gap-2">
@@ -24,10 +24,10 @@
                 </div>
 
                 <!-- 우측 버튼 -->
-                <div class="flex items-center gap-2 max-sm:flex-col">
+                <div class="flex items-center gap-2 max-lg:flex-col">
                     <DropStatus v-model="selectedStatus" height="45px" width="105px"/>
                     <div class="flex justify-between gap-2">
-                        <BtnEdit :to="`/Manager/Edit/${data.number}`" />
+                        <BtnEdit :to="`/Manager/Edit/${data.id}`" />
                         <BtnDiscard @click="openDeleteModal(data)" />
                     </div>
                 </div>
@@ -38,7 +38,7 @@
             <!-- 하단 정보 -->
             <div class="info grid max-md:grid-cols-3 grid-cols-10 gap-y-4 gap-x-4 text-base text-[#292929]">
                 <div class="info-list col-span-3">
-                    <InfoItem label="적용시기" :value="data.semester" />
+                    <InfoItem label="적용시기" :value="`${data.year} · ${data.semester}`" />
                 </div>
                 <div class="info-list col-span-3">
                     <InfoItem label="연수기간" :value="formattedPeriod" />
@@ -85,19 +85,9 @@
             <!-- 토글 콘텐츠 -->
             <div v-show="showDetails" class="mt-8">
                 <span class="w-20 text-[#727272]">연수내용</span>
-                <div
-                    class="bg-[#FAFAFA] border border-[#E3E6EA] rounded-xl p-8 text-[#292929] mt-4 text-base">
-                    <span>자율 웰빙초중급 (지터벅, 블루스에 관심 있는 사람은 누구나)</span>
-                    <ul class="list-disc ml-5 mt-2 space-y-1">
-                        <li>장소: 서울디자인고 4층 체육관</li>
-                        <li>시간: 2025.2.1(토) 개강 / 10 ~ 12시</li>
-                        <li>지터벅, 블루스</li>
-                        <li>준비물: 댄스화, 개인음료, 편한 복장</li>
-                        <li class="list-none text-[#A1A1A1] text-sm mt-[20px]">※ 댄스화 구매를 원하실 경우, 연수 시작 전 미리
-                            주문해 주세요.</li>
-                        <li class="list-none text-[#A1A1A1] text-sm">※ 문의: 010-6661-9191</li>
-                    </ul>
-                </div>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li v-for="(line, index) in parsedContent" :key="index">{{ line }}</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -124,6 +114,9 @@
     import InfoItem from './InfoItem.vue'
     import CheckboxItem from '../Checkbox/Item.vue'
     import DropStatus from '../Drop/Status.vue'
+    import { useToast } from 'vue-toastification'
+
+    const toast = useToast()
 
     import { ref } from 'vue'
 
@@ -132,6 +125,7 @@
         data: Object,
         selectedItems: Array,
         toggleItem: Function,
+        trainingList: Array
     })
 
     const isChecked = computed(() => {
@@ -180,6 +174,19 @@
         }
     }
 
+    // ✅ 연수내용
+    const parsedContent = computed(() => {
+        if (!props.data?.content) return [];
+
+        const lines = props.data.content
+            .replaceAll('\\r\\n', '\n')     // 줄바꿈 처리
+            .split('\n')                    // 줄별로 분리
+            .map(line => line.trim())      // 공백 제거
+            .filter(line => line.length);  // 빈 줄 제거
+
+        return lines;
+    });
+
     // ✅ 토글버튼
     const showDetails = ref(false)
 
@@ -191,7 +198,6 @@
     // ✅ 수정버튼 이동
     const route = useRoute()
     const trainingId = route.params.id
-
     console.log('연수 ID:', trainingId)
 
 
@@ -204,12 +210,6 @@
         isDeleteModalVisible.value = true
     }
 
-    const handleDelete = () => {
-        trainingList.value = trainingList.value.filter(
-        (item) => item.id !== selectedTrainingItem.value.id
-    )
-        isDeleteModalVisible.value = false
-    }
     // 모달 열릴 때 스크롤 잠금 / 닫힐 때 해제
     watch(isDeleteModalVisible, (visible) => {
         if (visible) {
@@ -218,6 +218,38 @@
             document.body.style.overflow = ''
         }
     })
+
+    const token = useCookie('auth_token').value;
+
+    // ✅ 삭제기능
+    const handleDelete = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/admin/courses/${selectedTrainingItem.value.id}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || '삭제 실패')
+            }
+
+            // 성공 시 로컬 데이터에서도 제거
+            trainingList.value = trainingList.value.filter(
+                (item) => item.id !== selectedTrainingItem.value.id
+            )
+            toast.success('연수가 성공적으로 삭제되었습니다.')
+            isDeleteModalVisible.value = false
+
+            emit('deleted', selectedTrainingItem.value.id)
+
+        } catch (error) {
+            toast.error(`삭제 중 오류가 발생했습니다: ${error.message}`)
+        }
+    }
 
     </script>
 
@@ -229,7 +261,11 @@
             display: flex;
             align-items: center;
         }
-
+        @media (max-width: 1204px) {
+            .title-box {
+                align-items: start;
+            }
+        }
         @media (max-width: 768px) {
             .info {
                 grid-template-columns: repeat(3, 1fr);
@@ -239,11 +275,10 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
-        }
-        @media (max-width: 630px) {
-            .title-box {
-                align-items: start;
+            .title {
+                font-size: 25px;
             }
         }
+
 </style>
 

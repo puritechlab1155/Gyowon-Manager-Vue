@@ -630,8 +630,6 @@
                 office => office.office_name === officeName.value
                 ) || null;
 
-            const hasOffice = selectedOffice !== null;
-
             const payload = {
                 username: username.value,
                 password: password.value,

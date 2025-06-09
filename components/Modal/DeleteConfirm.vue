@@ -15,6 +15,7 @@
                 <button
                 class="bg-[#2B5BBB] text-white flex-1 py-2.5 rounded-md hover:bg-[#1e4bb6] transition"
                 @click="$emit('confirm')"
+                
                 >
                 예
                 </button>

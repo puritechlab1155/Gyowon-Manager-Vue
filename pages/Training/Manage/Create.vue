@@ -3,17 +3,17 @@
     <form class="wrap create-top mt-[30px] max-w-[1200px] w-full mx-auto ">
         <div class="flex justify-between items-end mb-2">
             <h2 class="h1-title font-normal paperlogy">연수등록</h2>
-            <p class="text-[16px] font-semibold text-[#2B5BBB]">* 표시는 필수 입력입니다 </p>
+            <!-- <p class="text-[16px] font-semibold text-[#2B5BBB]">* 표시는 필수 입력입니다 </p> -->
         </div>
         <div class="border-t-[2px] border-[#2B5BBB] mb-5"></div>
 
-        <div class="box grid grid-cols-2 py-4 text-left max-xl:grid-cols-1 mx-auto max-sm:px-0 px-6 bg-[#FFFFFF]">
+        <div class="box box grid grid-cols-2 py-4 text-left max-xl:grid-cols-1 py-4 text-left mx-auto max-sm:px-0 px-6 bg-[#FFFFFF]">
             <!-- Row Template -->
             <!-- 1 -->
-            <div class="px-2 bg-[#FFFFFF] border-b border-t border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="label-box px-2 bg-[#FFFFFF] border-b border-t border-[#EFEFEF] h-[60px] flex items-center max-xl:w-full">
                 <label class="w-1/3 px-4 text-[18px] text-[#2B5BBB] after-small font-bold text-[#292929] max-sm:px-0">과정코드</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
-                    <input type="text" v-model="code"
+                    <input type="text" v-model="course_code" readonly disabled
                             class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1.5 max-sm:text-[14px] rounded-lg border border-[#2B5BBB] focus:outline-none tracking-wider"/>
                 </div>
             </div>
@@ -21,27 +21,22 @@
             </div>
 
             <!-- 2 -->
-            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
+            <div class="label-box px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">등록날짜</label>
                 <div class="w-2/3 flex flex-col">
-                    <input type="date" placeholder="YYYY-MM-DD" v-model="registDate"
-                    :class="[
-                    'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    registDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                    ]"
+                    <input type="date" v-model="registDate" readonly 
+                    class="w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]"
                     />
                 </div>
             </div>
-            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
-                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">등록시간</label>
-                <div class="w-2/3 flex flex-col">
-                    <input type="time" v-model="registTime"
+            <div class="label-box px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
+                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">접수마감</label>
+                <input type="date" placeholder="YYYY-MM-DD" v-model="postEnd"
                     :class="[
                     'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    registTime ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                    postEnd ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                     ]"
-                    />
-                </div>
+                />
             </div>
 
             <!-- 3 -->
@@ -51,7 +46,7 @@
                     <div class="flex items-center gap-2 max-sm:gap-1">
                         <input type="text" v-model="title"
                         :class="[
-                                'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                                'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
                                 title ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                         ]"
                         />
@@ -61,8 +56,8 @@
             <div class="px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] py-[6px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">과정상태</label>
                 <DropUser
-                    :options="statusOptions"
-                    v-model="status"
+                    :options="statusOptions.map(o => o.label)"
+                    v-model="statusLabel"
                 />
             </div>
 
@@ -72,7 +67,7 @@
                     <div class="w-2/3 flex gap-0">
                     <input v-model="type" type="radio" name="type" id="academy" value="연수원" class="hidden peer/academy" />
                     <label for="academy" 
-                        class="flex-1 h-[45px] text-center cursor-pointer px-4 py-2 text-[16px] max-sm:text-sm max-sm:leading-[2] border 
+                        class="flex-1 h-[45px] text-center cursor-pointer px-4 py-2 text-[18px] after-small max-sm:leading-[2] border 
                                 border-[#B5B5B5] text-[#B5B5B5] bg-[#F3F3F3] 
                                 peer-checked/academy:bg-[#EDF3FF] peer-checked/academy:text-[#2B5BBB] peer-checked/academy:border-[#2B5BBB]
                                 rounded-l-lg">
@@ -80,7 +75,7 @@
                     </label>
                     <input v-model="type" type="radio" name="type" id="research" value="연구회" class="hidden peer/research" />
                     <label for="research"
-                        class="flex-1 text-center cursor-pointer px-4 py-2 text-[16px] max-sm:text-sm max-sm:leading-[2] border-t border-b border-r 
+                        class="flex-1 text-center cursor-pointer px-4 py-2 text-[18px] after-small max-sm:leading-[2] border-t border-b border-r 
                                 border-[#B5B5B5] text-[#B5B5B5] bg-[#F3F3F3] 
                                 peer-checked/research:bg-[#EDF3FF] peer-checked/research:text-[#2B5BBB] peer-checked/research:border-[#2B5BBB]
                                 rounded-r-lg">
@@ -95,15 +90,44 @@
                     v-model="position"
                 />
             </div>
-
-            <!-- 5 -->
             <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">종목</label>
                 <DropUser
-                    :options="catagoryOptions"
-                    v-model="catagory"
+                    :options="divisionOptions"
+                    v-model="division"
                 />
             </div>
+            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">과정
+                </label>
+                <DropUser
+                    :options="courseOptions"
+                    v-model="course"
+                />
+            </div>
+
+            <!-- 5 -->
+            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">적용년도</label>
+                <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
+                        <input type="number" v-model="year" placeholder="2025 (숫자만 입력)"
+                        :class="[
+                            'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                            year ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                        ]"
+                    />
+                </div>
+            </div>
+            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">학기
+                </label>
+                <DropUser
+                    :options="semesterOptions"
+                    v-model="semester"
+                />
+            </div>
+
+            <!-- 6 -->
             <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">회차
                 </label>
@@ -112,36 +136,25 @@
                     v-model="round"
                 />
             </div>
-
-            <!-- 6 -->
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
-                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">적용년도</label>
-                <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
-                        <input type="number" v-model="year" placeholder="2025 (숫자만 입력)"
-                        :class="[
-                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                            year ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                        ]"
-                    />
-                </div>
-            </div>
-            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
-                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">회차
+            <div class="px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
+                    요일
                 </label>
                 <DropUser
-                    :options="semesterOptions"
-                    v-model="semester"
+                    :options="dayOptions"
+                    v-model="day"
                 />
             </div>
             
+
             <!-- 7 -->
             <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">이수시간</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
-                        <input type="number" v-model="completeTime" placeholder="30 (숫자만 입력)"
+                        <input type="number" v-model="hour" placeholder="30 (숫자만 입력)"
                         :class="[
-                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                            completeTime ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] text-[18px] after-small px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                            hour ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                         ]"
                     />
                 </div>
@@ -149,10 +162,10 @@
             <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">학점</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
-                        <input type="number" v-model="credit" placeholder="3 (숫자만 입력)"
+                        <input type="number" v-model="grade" placeholder="3 (숫자만 입력)"
                         :class="[
-                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                            credit ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] text-[18px] after-small px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                            grade ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                         ]"
                     />
                 </div>
@@ -164,7 +177,7 @@
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="tuitionFee" placeholder="140000 (숫자만 입력)"
                         :class="[
-                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] text-[18px] after-small px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
                             tuitionFee ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                         ]"
                     />
@@ -175,268 +188,45 @@
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="applicationFee" placeholder="200000 (숫자만 입력)"
                         :class="[
-                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                            'w-full flex-1 h-[45px] text-[#292929] placeholder-[#AFAFAF] text-[18px] after-small px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
                             applicationFee ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                         ]"
                     />
                 </div>
             </div>
 
+
             <!-- 9 -->
-            <div class="px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 py-[6px] bg-[#FFFFFF] border-b border-[#EFEFEF] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
-                    요일
+                연수기간
                 </label>
-                <DropUser
-                    :options="dayOptions"
-                    v-model="day"
-                />
+                <div class="w-2/3 flex gap-2 max-sm:flex-col">
+                    <input type="date" placeholder="YYYY-MM-DD" v-model="trainStartDate"
+                    :class="[
+                    'w-full flex-1 h-[45px] min-w-[0px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2.5 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                    trainStartDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                    ]"
+                    />
+                    <input type="date" placeholder="YYYY-MM-DD" v-model="trainEndDate"
+                    :class="[
+                    'w-full flex-1 h-[45px] min-w-[0px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2.5 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
+                    trainEndDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
+                    ]"
+                    />
+                </div>
             </div>
             <div class="px-2 bg-[#F9F9F9]  after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
                     교육장소
                 </label>
-                <DropUser
-                    :options="eduplaceOptions"
-                    v-model="eduplace"
-                />
+                <div class="w-2/3 flex gap-2">
+                    <DropEduPlace
+                        v-model="eduPlace"
+                    />
+                </div>
             </div>
 
-            <!-- 10 -->
-            <div class="px-2 py-[6px] bg-[#FFFFFF] border-b border-[#EFEFEF] flex items-center">
-                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
-                연수기간
-                </label>
-                <div class="w-2/3 flex gap-2">
-                    <input type="date" placeholder="YYYY-MM-DD" v-model="trainStartDate"
-                    :class="[
-                    'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    startDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                    ]"
-                    />
-                    <input type="date" placeholder="YYYY-MM-DD" v-model="trainEndDate"
-                    :class="[
-                    'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    endDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                    ]"
-                    />
-                </div>
-            </div>
-            <div class="w-full px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] border-none py-[6px] flex items-center">
-                <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
-                    접수기간
-                </label>
-                <div class="w-2/3 flex gap-2">
-                    <input type="date" placeholder="YYYY-MM-DD" v-model="applicateStartDate"
-                    :class="[
-                    'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    applicationDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                    ]"
-                    />
-                    <input type="date" placeholder="YYYY-MM-DD" v-model="applicateEndDate"
-                    :class="[
-                    'w-full flex-1 h-[45px] text-[#292929] text-[18px] after-small placeholder-[#AFAFAF] px-3 py-1.5 max-sm:px-2 rounded-lg border border-[#DBDEE3] focus:outline-none focus:border-[#2B5BBB]',
-                    endDate ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
-                    ]"
-                    />
-                </div>
-            </div>
-            <div
-                class="bg-[#F9F9F9] max-xl:bg-[#FEFEFE] col-span-2 px-2 h-[60px] flex items-center max-xl:col-span-1 max-sm:flex-col max-sm:h-[100px]">
-                <div class="w-1/6 max-xl:w-1/4 max-sm:justify-start max-sm:w-full">
-                    <label
-                        class="p-4 x-4 max-sm:px-0 text-[18px] max-sm:text-[16px] font-bold text-[#292929] flex items-center py-4 xl:hidden">교육내용</label>
-                </div>
-                <div
-                    class="w-5/6 max-xl:w-3/4 max-sm:w-full max-xl:justify-end max-sm:gap-1 max-xl:justify-start flex gap-2">
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/../../assets/img/training-mgmt/bold.png" alt="글씨 굵게하기 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5 bject-contain" />
-                    </button>
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/../../assets/img/training-mgmt/underline.png" alt="밑줄 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5  object-contain" />
-                    </button>
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/../../assets/img/training-mgmt/strikethrough.png" alt="중간선 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5  object-contain" />
-                    </button>
-                    <div class="relative">
-                        <button id="colorToggleBtn" type="button"
-                            class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                            <img src="../../assets/../../assets/img/training-mgmt/color.png" alt="글자색 버튼"
-                                class="w-6 h-6 max-xl:w-5 max-xl:h-5 object-contain" />
-                        </button>
-                        <div id="colorPalette"
-                            class="style-pop absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-md p-2 hidden z-[10]">
-                            <!-- X 닫기 버튼 -->
-                            <div class="flex justify-end mb-2">
-                                <button id="closePaletteBtn" type="button"
-                                    class="text-gray-500 hover:text-gray-700 text-sm">✕</button>
-                            </div>
-                            <ul class="array-box title-color flex flex-col gap-2">
-                                <div class="g-15 flex gap-2">
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-red-500"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-orange-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-yellow-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-green-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-blue-400"></div>
-                                    </button>
-                                </div>
-                                <div class="g-15 flex gap-2">
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-purple-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-pink-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-gray-400"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-black"></div>
-                                    </button>
-                                    <button type="button" class="pop-list">
-                                        <div
-                                            class="circle-color w-6 h-6 rounded-full bg-white border border-gray-300">
-                                        </div>
-                                    </button>
-                                </div>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <button id="bgToggleBtn" type="button"
-                            class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                            <img src="../../assets/../../assets/img/training-mgmt/bg-color.png" alt="글자 배경색 버튼"
-                                class="w-6 h-6 max-xl:w-5 max-xl:h-5 object-contain" />
-                        </button>
-
-                        <div id="bgColorPalette"
-                            class="style-pop absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-md p-2 hidden z-[10]">
-                            <div class="flex justify-end mb-2">
-                                <button id="closeBgPaletteBtn" type="button"
-                                    class="text-gray-500 hover:text-gray-700 text-sm">✕</button>
-                            </div>
-                            <ul class="array-box bg-color flex flex-col gap-2">
-                                <div class="g-15 flex gap-2">
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-red-300"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-orange-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-yellow-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-green-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-blue-300"></div>
-                                    </button>
-                                </div>
-                                <div class="g-15 flex gap-2">
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-purple-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-pink-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-gray-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-teal-200"></div>
-                                    </button>
-                                    <button type="button" class="bg-pop-list">
-                                        <div class="circle-color w-6 h-6 rounded-full bg-indigo-200"></div>
-                                    </button>
-                                </div>
-                            </ul>
-                        </div>
-                    </div>
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/img/training-mgmt/left-align.png" alt="왼쪽 정렬 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5 object-contain" />
-                    </button>
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/img/training-mgmt/center-align.png" alt="가운데 정렬 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5 object-contain" />
-                    </button>
-                    <button
-                        class="rounded-lg bg-[#EFEFEF] hover:bg-[#ECECEC] px-2 py-2 flex items-center justify-center">
-                        <img src="../../assets/img/training-mgmt/right-align.png" alt="오른쪽 정렬 버튼"
-                            class="w-6 h-6 max-xl:w-5 max-xl:h-5 object-contain" />
-                    </button>
-                </div>
-            </div>
-            <div id="colorPalette"
-                class="style-pop absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-md p-2 hidden z-[10]">
-                <ul class="array-box title-color flex flex-col gap-2">
-                    <div class="g-15 flex gap-2">
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-red-500"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-orange-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-yellow-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-green-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-blue-400"></div>
-                        </button>
-                    </div>
-                    <div class="g-15 flex gap-2">
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-purple-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-pink-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-gray-400"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-black"></div>
-                        </button>
-                        <button type="button" class="pop-list">
-                            <div class="circle-color w-6 h-6 rounded-full bg-white border border-gray-300">
-                            </div>
-                        </button>
-                    </div>
-                </ul>
-            </div>
-            <div
-                class="col-span-2 max-xl:col-span-1 max-xl:flex max-xl:flex-col px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[500px] w-full grid grid-cols-6">
-                <label
-                    class="col-span-1 px-4 max-sm:px-0 text-[18px] max-sm:text-[15px] font-bold text-[#292929] flex items-center py-4 max-xl:hidden">교육내용</label>
-                    <div class="col-span-5 flex items-center h-full">
-                        <div class="w-full bg-[#FFFFFF] border border-[#EFEFEF] rounded-xl h-[480px] flex items-center">
-                        <textarea
-                            class="w-full h-full px-4 py-4 text-[16px] text-[#292929] rounded-xl resize-none focus:outline-none focus:border-[#2B5BBB] placeholder-[#AFAFAF]"
-                            placeholder="교육내용을 입력하세요"></textarea>
-                        </div>
-                    </div>
-            </div>
         </div>
 
         <div class="border-t-[2px] border-[#2B5BBB] mt-5"></div>
@@ -448,7 +238,7 @@
                     class="max-w-[282px] w-full px-5 py-2 text-white bg-[#2B5BBB] rounded-[10px] hover:bg-[#648DDF]">
                     등록하기
                 </button>
-                <button type="button" onclick="window.location.href='user.html'"
+                <button type="button" @click="cancelForm"
                     class="max-w-[282px] w-full px-5 py-2 bg-[#F5F5F5] rounded-[10px] hover:bg-[#EBEBEB] border border-[#DBDEE3]">
                     취소하기
                 </button>
@@ -456,25 +246,26 @@
         </div>
 
     </form>
-    <p class="mt-4 text-gray-700">username(아이디): {{ username }}</p>
-    <p class="mt-4 text-gray-700">password(비밀번호): {{ password }}</p>
-    <p class="mt-4 text-gray-700">email(이메일): {{ email }}</p>
-    <p class="mt-4 text-gray-700">name(이름): {{ name }}</p>
-    <p class="mt-4 text-gray-700">gender(성별): {{ gender }}</p>
-    <p class="mt-4 text-gray-700">birth(생년월일): {{ birth }}</p>
-    <p class="mt-4 text-gray-700">phone(휴대번호): {{ phone }}</p>
-    <p class="mt-4 text-gray-700">zipcode(우편번호): {{ zipcode }}</p>
-    <p class="mt-4 text-gray-700">address(주소): {{ address }}</p>
-    <p class="mt-4 text-gray-700">address_detail(상세주소): {{ addressDetail }}</p>
-    <p class="mt-4 text-gray-700">work_state(근무지역): {{ workState }}</p>
-    <p class="mt-4 text-gray-700">workplace_name(직장명): {{ workPlaceName }}</p>
-    <p class="mt-4 text-gray-700">school_type(소속기관): {{ schoolType }}</p>
-    <p class="mt-4 text-gray-700">establishment_type(설립구분): {{ establishmentType }}</p>
-    <p class="mt-4 text-gray-700">job_position(직급): {{ jobPosition }}</p>
-    <p class="mt-4 text-gray-700">major_subject(전공과목): {{ majorSubject }}</p>
-    <p class="mt-4 text-gray-700">referral_source(가입경로): {{ referralSource }}</p>
-    <p class="mt-4 text-gray-700">office_name(소속교육지원청): {{ officeName }}</p>
-    <p class="mt-4 text-gray-700">nicenumber(NICE 번호): {{ niceNumber }}</p>
+    <p class="mt-4 text-gray-700">course_code(과정코드): {{ course_code }}</p>
+    <p class="mt-4 text-gray-700">registDate(등록날짜): {{ registDate }}</p>
+    <p class="mt-4 text-gray-700">course_post_end(접수마감날): {{ postEnd }}</p>
+    <p class="mt-4 text-gray-700">title(과정명): {{ title }}</p>
+    <p class="mt-4 text-gray-700">status(과정상태): {{ statusLabel }}</p>
+    <p class="mt-4 text-gray-700">type(연수주관): {{ type }}</p>
+    <p class="mt-4 text-gray-700">position(직무): {{ position }}</p>
+    <p class="mt-4 text-gray-700">division(종목): {{ division }}</p>
+    <p class="mt-4 text-gray-700">course(과정): {{ course }}</p>
+    <p class="mt-4 text-gray-700">round(회차): {{ round }}</p>
+    <p class="mt-4 text-gray-700">year(적용년도): {{ year }}</p>
+    <p class="mt-4 text-gray-700">semester(학기): {{ semester }}</p>
+    <p class="mt-4 text-gray-700">hour(이수시간): {{ hour }}</p>
+    <p class="mt-4 text-gray-700">grade(학점): {{ grade }}</p>
+    <p class="mt-4 text-gray-700">tuitionFee(수강료): {{ tuitionFee }}</p>
+    <p class="mt-4 text-gray-700">applicationFee(지원금): {{ applicationFee }}</p>
+    <p class="mt-4 text-gray-700">day(요일): {{ day }}</p>
+    <p class="mt-4 text-gray-700">eduPlace(교육장소): {{ eduPlace }}</p>
+    <p class="mt-4 text-gray-700">course_start(연수시작): {{ trainStartDate }} </p>
+    <p class="mt-4 text-gray-700">course_end(연수끝): {{ trainEndDate }} </p>
 </template>
 
 
@@ -483,35 +274,50 @@
     import { onMounted } from 'vue'
     import DropUser from '../../components/Drop/User.vue'
     import { useToast } from 'vue-toastification'
-    import { useDebounceFn } from '@vueuse/core'
     import { useRouter } from 'vue-router';
+
+    import DropEduPlace from '../../../components/Drop/EduPlace.vue'; 
+    const eduPlace = ref([]);
 
     const router = useRouter()
     const toast = useToast()
 
-    const password = ref('')
-    const passwordConfirm = ref('')
-    const email = ref('')
-    const name = ref('')
-    const gender = ref('')
-    const birthInput = ref('')
-    const birth = ref('')
-    const zipcode = ref('')
-    const address = ref('')
-    const addressDetail = ref('')
-    const phone = ref('')
-    const workPlaceName = ref('')
-    const majorSubject = ref('')
-    const niceNumber = ref('')
 
-    const statusOptions = ['선택하세요', '과정개설 및 접수중', '접수마감', '과정종료'];
-    const status = ref('')
+    const course_code = ref('2025-4-A01171601')
+    const registDate = ref(getTodayDate());
+    const postEnd = ref('');
+    const title = ref('');
+    const type = ref('');
+    const year = ref(''); 
+    const hour = ref('');
+    const grade = ref(''); 
+    const tuitionFee = ref('');
+    const applicationFee = ref('');
+    const trainStartDate = ref('')
+    const trainEndDate = ref('')
+    const content = ref('');
 
-    const positionOptions = ['선택하세요','서울', '경기', '자율'];
+    const statusOptions = [
+        { label: '선택하세요', value: null },
+        { label: '과정개설 및 접수중', value: 1 },
+        { label: '접수마감', value: 0 },
+        { label: '과정종료', value: null }
+    ];
+    const statusLabel = ref('선택하세요');
+
+    // statusLabel에 해당하는 statusOptions 객체 찾기
+    const selectedStatusObj = computed(() => {
+        return statusOptions.find(opt => opt.label === statusLabel.value) || null;
+    });
+
+    const positionOptions = ['선택하세요','서울직무', '경기직무', '자율'];
     const position = ref('')
 
-    const catagoryOptions = ['선택하세요', '댄스스포츠', '웰빙댄스', '라인댄스','라틴댄스'];
-    const catagory = ref('')
+    const courseOptions = ['선택하세요', '직무', '자율', '지도자'];
+    const course = ref('')
+
+    const divisionOptions = ['선택하세요', '댄스스포츠', '웰빙댄스', '라인댄스','라틴댄스'];
+    const division = ref('')
 
     const roundOptions = ['선택하세요', '1회차', '2회차', '3회차', '4회차', '기타'];
     const round = ref('')
@@ -519,10 +325,164 @@
     const semesterOptions = ['선택하세요', '1학기', '하계', '2학기', '동계'];
     const semester = ref('')
 
-    const dayOptions = ['선택하세요', '매주 월요일', '매주 화요일', '매주 수요일', '매주 목요일', '매주 금요일', '매주 토요일', '매주 일요일'];
+    const dayOptions = ['선택하세요', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
     const day = ref('')
 
-    const eduplaceOptions = ['선택하세요', '', '', '', '', '', '', ''];
-    const eduplace = ref('')
 
+
+    const token = useCookie('auth_token').value;
+
+    const submitForm = async () => {
+        // 기본 유효성 검사 (필수)
+        if (!title.value || !type.value || !trainStartDate.value || !trainEndDate.value) {
+            toast.error('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
+            return;
+        }
+
+        // API 요청을 위한 데이터(페이로드) 준비
+        const payload = {
+            // user_id: 1, // 예시: 사용자 ID, 실제로는 인증된 사용자 ID를 사용해야 함
+            order : 0,
+            opening : 1,
+            course_code: course_code.value,
+            course_name: title.value,
+            status: selectedStatusObj.value ? selectedStatusObj.value.value : null,
+            range: type.value, // '연수원' 또는 '연구회'
+            job_classification: position.value === '선택하세요' ? null : position.value,
+            division: division.value === '선택하세요' ? null : division.value,
+            time: round.value === '선택하세요' ? null : round.value, // API는 'time' 필드를 회차로 사용
+            application_year: year.value ? String(year.value) : null, // API가 문자열을 예상한다면 String()으로 변환
+            semester: semester.value === '선택하세요' ? null : semester.value,
+            hour: hour.value !== '' ? Number(hour.value) : null,
+            grade: grade.value !== '' ? String(grade.value) : null,
+            tuition: tuitionFee.value !== '' ? Number(tuitionFee.value) : null,
+            application_fee: applicationFee.value !== '' ? Number(applicationFee.value) : null,
+            day_of_week: day.value === '선택하세요' ? null : day.value,
+            course_start: trainStartDate.value, // YYYY-MM-DD 형식
+            course_end: trainEndDate.value,     // YYYY-MM-DD 형식
+            course_post_end: postEnd.value, // 접수 종료일로 가정. 접수 시작일이 별도 필드면 추가해야 함.
+            content: content.value,
+            // course_place는 API에서 배열을 예상하므로 배열로 보냅니다.
+            course_place: eduPlace.value === '선택하세요' || !eduPlace.value ? null : [eduPlace.value],
+            // created_at 및 updated_at은 일반적으로 백엔드에서 설정하므로 프론트엔드에서 보낼 필요 없음
+            // 만약 API에서 특정 created_at을 요구한다면, registDate와 registTime을 조합하여 보낼 수 있음
+            // created_at: `${registDate.value}T${registTime.value}:00.000000Z`, // 예시
+        };
+
+        // API가 접수 시작일과 종료일을 구분한다면, `applyStartDate` 필드를 여기에 추가
+        // payload.application_start_date = applyStartDate.value; // 예시
+
+        console.log("전송할 페이로드:", payload);
+
+        try {
+            // useFetch를 사용하여 POST 요청 수행
+            const { data, error } = await useFetch('http://localhost:8000/api/admin/courses', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json', // JSON 페이로드임을 알림
+                    'Accept': 'application/json' // JSON 응답을 선호함을 알림
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (error.value) {
+                console.error('연수 등록 실패:', error.value.data || error.value);
+                // API에서 보낸 상세 에러 메시지가 있다면 사용
+                const errorMessage = error.value.data?.message || '연수 등록에 실패했습니다.';
+                toast.error(errorMessage);
+                return;
+            }
+
+            if (data.value) {
+                console.log('연수 등록 성공:', data.value);
+                toast.success('연수가 성공적으로 등록되었습니다!');
+                // 등록 성공 후 연수 목록 페이지로 이동
+                router.push('/training/manage');
+            }
+
+        } catch (e) {
+            console.error('연수 등록 중 오류 발생:', e);
+            toast.error('연수 등록 중 알 수 없는 오류가 발생했습니다.');
+        }
+    }
+
+    // 취소 버튼 클릭 시 호출될 함수
+    const cancelForm = () => {
+        router.push('/training/manage'); // Manage > index.vue 로 이동
+    };
+    // ✅ 오늘 날짜 가져오기
+    function getTodayDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+
+    
+    // ✅ 페이지 타이틀 설정
+    const pageTitle = useState('pageTitle')
+        onMounted(async () => {
+            pageTitle.value = '연수등록'
+            fetchOfficeOptions();
+    })
 </script>
+
+<style scoped> 
+
+    .mob-br {
+        display: none;
+    }
+
+    @media (max-width: 1280px) {
+        .box {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+        .after-gray {
+            background-color: #F9F9F9;
+        }
+        .after-white {
+            background-color: #FFFFFF;
+        }
+        .border-none {
+            border-bottom: 0;
+        }
+        .wrap {
+            width: 80%;
+        }
+    }
+    @media (max-width: 767px) {
+        .mob-br {
+            display: block;
+        }
+        .after-small {
+            font-size: 16px;
+        }
+        .after-toosmall {
+            font-size: 15px;
+        }
+        .btn {
+            min-width: 95px;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        .box {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        label {
+            padding-left: 0.1rem;
+            padding-right: 0.1rem;
+        }
+        .wrap {
+            width: 100%;
+        }
+        .tighter {
+            letter-spacing: -1px;
+        }
+    }
+
+</style>
