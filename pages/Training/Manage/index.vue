@@ -16,7 +16,6 @@
                     <DropSemester v-model="selectedSemester"/>
                     <DropPosition v-model="selectedPosition"/>
                     <DropCourse v-model="selectedCourse"/>
-                    <DropEduPlace v-model="selectedEduPlace"/>
                 </div>
                 <div
                     class=" flex justify-between items-center max-lg:grid max-lg:grid-cols-5 max-lg:gap-2 max-lg:w-full">

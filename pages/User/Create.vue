@@ -311,7 +311,7 @@
         </div>
 
     </form>
-    <p class="mt-4 text-gray-700">username(아이디): {{ username }}</p>
+    <!-- <p class="mt-4 text-gray-700">username(아이디): {{ username }}</p>
     <p class="mt-4 text-gray-700">password(비밀번호): {{ password }}</p>
     <p class="mt-4 text-gray-700">email(이메일): {{ email }}</p>
     <p class="mt-4 text-gray-700">name(이름): {{ name }}</p>
@@ -329,7 +329,7 @@
     <p class="mt-4 text-gray-700">major_subject(전공과목): {{ majorSubject }}</p>
     <p class="mt-4 text-gray-700">referral_source(가입경로): {{ referralSource }}</p>
     <p class="mt-4 text-gray-700">office_name(소속교육지원청): {{ officeName }}</p>
-    <p class="mt-4 text-gray-700">nicenumber(NICE 번호): {{ niceNumber }}</p>
+    <p class="mt-4 text-gray-700">nicenumber(NICE 번호): {{ niceNumber }}</p> -->
 </template>
 
 <script setup>
@@ -377,6 +377,13 @@
     const officeOptions = ref()
     const officeName = ref('')
 
+    const isChecking = ref(false)          // 아이디 중복 체크 중 상태
+    const isCheckingEmail = ref(false)     // 이메일 중복 체크 중 상태
+
+    const isUsernameChecked = ref(false) // 아이디 중복체크 통과 여부
+    const isEmailChecked = ref(false) // 이메일 중복체크 통과 여부
+    const isPasswordValid = ref(false) // 비밀번호 동일 통과 여부
+
 
     const token = useCookie('auth_token').value
 
@@ -393,9 +400,10 @@
             const json = await res.json()
 
             if (json.result && json.data) {
-                originalOffices.value = json.data
-                // '선택하세요' 기본 옵션과 API 데이터 합치기
                 officeOptions.value = ['선택하세요', ...json.data.map(item => item.office_name)]
+
+                // '선택하세요' 기본 옵션과 API 데이터 합치기
+                originalOffices.value = json.data
             } else {
 
             console.error('오피스 데이터 불러오기 실패:', json.message)
@@ -405,23 +413,26 @@
         }
     }
 
-    const isChecking = ref(false)
     
     // ✅ 아이디 중복체크
     const checkUsername = async () => {
-    
+        if (isChecking.value) return  // 중복체크 중복 호출 방지
+        isChecking.value = true
+        
         const usernameValue = username.value.trim()
 
         // 1. 입력 여부 확인
         if (!username.value) {
             toast.error('아이디를 입력해주세요.')
             isChecking.value = false
+            isUsernameChecked.value = false
             return
         }
         const usernameRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{5,13}$/
         if (!usernameRegex.test(usernameValue)) {
             toast.warning('아이디는 영문과 숫자 조합의 5~13자리여야 합니다.')
             isChecking.value = false
+            isUsernameChecked.value = false
             return
         }
 
@@ -437,20 +448,21 @@
 
             if (json.result) {
                 toast.success(json.message)  // 예: "사용 가능한 아이디입니다."
+                isUsernameChecked.value = true
             } else {
                 toast.error(json.message)    // 예: "이미 사용중인 아이디입니다."
+                isUsernameChecked.value = false
                 }
         } catch (err) {
             toast.error('서버 오류가 발생했습니다.')
             console.error(err)
-        } finally {
-            isChecking.value = false // 요청 끝나면 다시 허용
+            isUsernameChecked.value = false
+            } finally {
+            isChecking.value = false
         }
     }
 
     // ✅ 이메일 중복체크
-    const isCheckingEmail = ref(false)
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     const checkEmail = async () => {
@@ -462,11 +474,14 @@
         // 입력 여부 및 유효성 검사
         if (!emailValue) {
             toast.error('이메일을 입력해주세요.')
+            isEmailChecked.value = false
             isCheckingEmail.value = false
+
             return
         }
         if (!emailRegex.test(emailValue)) {
             toast.warning('유효한 이메일 주소를 입력해주세요.')
+            isEmailChecked.value = false
             isCheckingEmail.value = false
             return
         }
@@ -483,32 +498,27 @@
         const json = await res.json()
 
         if (json.result) {
-        toast.success(json.message || '사용 가능한 이메일입니다.')
+            toast.success(json.message || '사용 가능한 이메일입니다.')
+            isEmailChecked.value = true
         } else {
-        toast.error(json.message || '이미 사용 중인 이메일입니다.')
+            toast.error(json.message || '이미 사용 중인 이메일입니다.')
+            isEmailChecked.value = false
         }
         } catch (err) {
             toast.error('서버 오류가 발생했습니다.')
             console.error(err)
+            isEmailChecked.value = false
         } finally {
             isCheckingEmail.value = false
         }
     }
 
-    // 각각 debounce 함수 따로 선언
-    const debouncedCheckUsername = useDebounceFn(checkUsername, 500)
-    const debouncedCheckEmail = useDebounceFn(checkEmail, 500)
-
-    // 클릭 핸들러
     const onClickCheckUsername = () => {
-        if (isChecking.value) return
-        isChecking.value = true
-        debouncedCheckUsername()
+        checkUsername()
     }
 
     const onClickCheckEmail = () => {
-        console.log('[onClickCheckEmail] 버튼 클릭됨')
-        debouncedCheckEmail()
+        checkEmail()
     }
 
     // ✅ 비밀번호 체크
@@ -520,23 +530,28 @@
 
         if (!pwd) {
             toast.warning('비밀번호를 입력해주세요.')
+            isPasswordValid.value = false
             return
         }
 
         if (!pwdRegex.test(pwd)) {
             toast.error('비밀번호는 4~16자리이며 영문자, 숫자, 특수문자를 모두 포함해야 합니다.')
+            isPasswordValid.value = false
             return
         }
 
         if (!pwdConfirm) {
             toast.warning('비밀번호 확인을 입력해주세요.')
+            isPasswordValid.value = false
             return
         }
 
         if (pwd !== pwdConfirm) {
             toast.error('비밀번호가 일치하지 않습니다.')
+            isPasswordValid.value = false
         } else {
             toast.success('비밀번호가 일치합니다.')
+            isPasswordValid.value = true
         }
     }
 
@@ -583,14 +598,39 @@
     // ✅ 회원등록하기
     const submitForm = async () => {
         try {
-            const selectedOffice = (officeName.value && officeName.value !== '선택하세요')
-                ? originalOffices.value.find(office => office.office_name === officeName.value)
-                : null;
+            if (!isUsernameChecked.value) {
+                toast.error('아이디 중복 체크를 완료해주세요.')
+                return
+            }
+            if (!isEmailChecked.value) {
+                toast.error('이메일 중복 체크를 완료해주세요.')
+                return
+            }
+            if (!isPasswordValid.value) {
+                toast.error('비밀번호를 올바르게 입력해주세요.')
+                return
+            }
+            // 기존 필수 입력값 체크 (username, password, email, name, gender, birth, phone, zipcode, address, workPlaceName)
+            if (
+                !username.value ||
+                !password.value ||
+                !email.value ||
+                !name.value ||
+                !gender.value ||
+                !birth.value ||
+                !phone.value ||
+                !zipcode.value ||
+                !address.value ||
+                !workPlaceName.value
+            ) {
+                toast.error('모든 필수 입력값을 입력해주세요.')
+                return
+            }
+            const selectedOffice = originalOffices.value.find(
+                office => office.office_name === officeName.value
+                ) || null;
 
-                console.log('officeName.value:', officeName.value);
-                console.log('selectedOffice:', selectedOffice);
-
-            const hasOffice = !!selectedOffice
+            const hasOffice = selectedOffice !== null;
 
             const payload = {
                 username: username.value,
@@ -610,12 +650,11 @@
                 job_position: jobPosition.value,
                 major_subject: majorSubject.value,
                 referral_source: referralSource.value,
-                office_id: hasOffice ? "2" : "1",
-                office: hasOffice? {
+                office_id: selectedOffice ? selectedOffice.id : null,
+                office: selectedOffice ? {
                     id: selectedOffice.id,
                     office_name: selectedOffice.office_name,
-                }
-                : null,
+                } : null, // ✅ 없을 경우 null
                 nicenumber: niceNumber.value
             }
             console.log('payload:', payload);

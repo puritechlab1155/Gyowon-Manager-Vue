@@ -15,7 +15,7 @@
                         <DropEduPlace v-model="selectedEduPlace"/>
                         <DropDay v-model="selectedDay"/>
                         <DropRound v-model="selectedRound"/>
-                        <DropPayStatus v-model="selectedPayStatus"/>
+                        <DropPayStatus v-model="selectedPayStatus" height="51px" width="120px"/>
                     </div>
                     <div
                     class=" flex justify-between items-center max-lg:grid max-lg:grid-cols-5 max-lg:gap-2 max-lg:w-full">
@@ -58,90 +58,7 @@
         <p class="mt-4 text-gray-700">선택된 요일: {{ selectedDay }}</p>
         <p class="mt-4 text-gray-700">선택된 회차: {{ selectedRound }}</p>
         <p class="mt-4 text-gray-700">선택된 상태: {{ selectedPayStatus }}</p> -->
-        <div class="flex justify-between mt-5 maxlg:mt-2 border-b border-b-[#2B5BBB] border-b-[2px]">
-            <div class="flex space-x-4 overflow-x-auto whitespace-nowrap no-scrollbar">
-                <button
-                    class="tab flex items-center gap-2 px-4 py-2 bg-[#2B5BBB] rounded-t-lg hover:text-[#FEFEFE] hover:font-semibold focus:text-[#FEFEFE] focus:font-semibold focus:outline-none">
-                    <span class="text-[16px] text-[#FEFEFE] font-semibold">
-                        전체
-                    </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#FEFEFE] rounded-md px-2 text-[#2B5BBB] text-[12px] leading-5">
-                        186
-                    </span>
-                </button>
-                <button
-                    class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                        class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        입금 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        120
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                    class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        미입금 </span>
-                    <span
-                    class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        120
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                    class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        수강대기 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        17
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                    class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        수강확정 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        120
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                        class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        수강취소 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        36
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                        class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        수강연기 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        137
-                    </span>
-                </button>
-                <button
-                class="tab group flex items-center bg-[#D3E1FB] gap-2 px-4 py-2 border-2 border-transparent rounded-t-lg hover:text-[#2B5BBB] hover:bg-[#2B5BBB] focus:text-[#FEFEFE] focus:bg-[#2B5BBB] focus:font-semibold focus:outline-none">
-                    <span
-                        class="text-[16px] text-[#292929] font-medium group-hover:text-[#FEFEFE] group-focus:font-semibold group-focus:text-[#FEFEFE]">
-                        환불 </span>
-                    <span
-                        class="flex font-semibold items-center justify-center bg-[#2B5BBB] text-[#FEFEFE] group-focus:bg-[#FEFEFE] group-hover:bg-[#FEFEFE] group-hover:text-[#2B5BBB]  group-focus:text-[#2B5BBB] rounded-md px-2 text-[#727272] text-[12px] leading-5">
-                        17
-                    </span>
-                </button>
-            </div>
-        </div>
+        <TabPay v-model="activeTab" :tabs="tabsWithCount" />
     </div>
 
     <div class="w-full">
@@ -766,8 +683,6 @@
 
     import { useState } from '#app'
 
-
-
     const selectedYear = ref('')
     const selectedSemester = ref('')
     const selectedCourse = ref('')
@@ -775,6 +690,41 @@
     const selectedDay = ref('')
     const selectedRound = ref('')
     const selectedPayStatus = ref('')
+
+    // ✅ 원본 데이터
+    const rawData = {
+        all: 186,
+        입금: 120,
+        미입금: 50,
+        수강대기: 17,
+        수강확정: 120,
+        수강취소: 36,
+        수강연기: 137,
+        환불: 17
+    }
+
+    // ✅ 탭 목록 정의
+    const tabList = [
+        { id: 'all', label: '전체' },
+        { id: '입금', label: '입금' },
+        { id: '미입금', label: '미입금' },
+        { id: '수강대기', label: '수강대기' },
+        { id: '수강확정', label: '수강확정' },
+        { id: '수강취소', label: '수강취소' },
+        { id: '수강연기', label: '수강연기' },
+        { id: '환불', label: '환불' }
+    ]
+
+    // ✅ 활성 탭 상태
+    const activeTab = ref('all')
+
+    // ✅ count 포함된 탭 목록 계산
+    const tabsWithCount = computed(() =>
+        tabList.map(tab => ({
+            ...tab,
+            count: rawData[tab.id] || 0
+        }))
+    )
 
     const pageTitle = useState('pageTitle')
     pageTitle.value = '수강자 입금관리'

@@ -253,7 +253,7 @@
 
     // ✅ 탭 정보
     const tabs = [
-        { id: 'tab1', label: '전체', office: null },
+        { id: 'tab1', label: '전체', off: null },
         { id: 'tab2', label: '교원', office: 2 },
         { id: 'tab3', label: '일반', office: 1 }
     ]
@@ -298,7 +298,7 @@
                         number: startNumber - index,
                         userId: user.username,
                         name: user.name,
-                        type: user.office_id == "2" ? '교원' : '일반',
+                        type: Number(user.office_id) === 2 ? '교원' : '일반',
                         gender: user.gender,
                         birthDate: formatBirth(user.birth),
                         workArea: user.work_state || '-',

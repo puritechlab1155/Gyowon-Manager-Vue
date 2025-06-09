@@ -41,7 +41,7 @@
                     </td>
                     <td class="w-[12%]">
                         <div class="flex justify-center gap-2 px-2">
-                            <EditBtn :to="`/User/Edit/${row.userId}`" />
+                            <EditBtn :to="`/User/Edit/${row.id}`" />
                             <SubjectApply :userId="row.userId" />
                         </div>
                     </td>

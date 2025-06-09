@@ -3,9 +3,9 @@
   :class="{ 'z-[100]': isOpen, 'z-[50]': !isOpen }">
     <button
       type="button"
-      class="dropdown-button bg-[#F3F3F3] border border-[#DBDEE3] text-[#727272] px-3 py-1.5 pr-2 rounded-lg h-[45px] w-full flex justify-between items-center 0 focus:outline-none focus:border-[#2B5BBB]"
+      class="dropdown-button bg-[#F3F3F3] border border-[#DBDEE3] text-[#727272] text-[18px] after-small px-3 py-1.5 pr-2 rounded-lg h-[45px] w-full flex justify-between items-center 0 focus:outline-none focus:border-[#2B5BBB]"
       @click="toggleDropdown"
-      :class="selected ? 'bg-[#FFFFFF] text-[#292929]' : 'bg-[#F3F3F3] text-[#AFAFAF]'"
+      :class="[!selected || selected === '선택하세요' ? 'bg-[#F3F3F3] text-[#AFAFAF]' : 'bg-[#FFFFFF] text-[#292929]']"
     >
     {{ selected === '기타' ? '직접 입력' : (selected || '선택하세요') }}
       <svg class="w-5 h-5 text-[#292929]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,7 +80,7 @@ const selectOption = (option) => {
   isOpen.value = false
   selected.value = option
 
-  if (option === '기타') {
+  if (option === '기타' || option === '선택하세요') {
     customInput.value = ''
     emit('update:modelValue', '')
   } else {
