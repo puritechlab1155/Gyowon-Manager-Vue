@@ -1,6 +1,6 @@
 <template>
-    <span class="w-20 text-[#727272] max-md:text-[16px]">{{ label }}</span>
-    <span class="text-[20px] max-md:text-[18px]" v-html="value"></span>
+    <span class="w-20 text-[#727272] after-small">{{ label }}</span>
+    <span class="text-[20px] after-small" v-html="value"></span>
 </template>
 
 <script setup>
@@ -15,9 +15,20 @@ defineProps({
     .mob-br {
         display: none;
     }
+    @media (max-width: 1280px) {
+        .after-small {
+            font-size: 18px;
+        }
+    }
     @media (max-width: 768px) {
         .mob-br {
             display: block;
+        }
+
+    }
+    @media (max-width: 480px) {
+        .after-small {
+            font-size: 16px;
         }
     }
 

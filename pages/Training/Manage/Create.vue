@@ -10,18 +10,18 @@
         <div class="box box grid grid-cols-2 py-4 text-left max-xl:grid-cols-1 py-4 text-left mx-auto max-sm:px-0 px-6 bg-[#FFFFFF]">
             <!-- Row Template -->
             <!-- 1 -->
-            <div class="label-box px-2 bg-[#FFFFFF] border-b border-t border-[#EFEFEF] h-[60px] flex items-center max-xl:w-full">
+            <div class="label-box px-2 bg-[#F9F9F9] border-b border-t border-[#EFEFEF] h-[60px] flex items-center max-xl:w-full">
                 <label class="w-1/3 px-4 text-[18px] text-[#2B5BBB] after-small font-bold text-[#292929] max-sm:px-0">과정코드</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                     <input type="text" v-model="course_code" readonly disabled
                             class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1.5 max-sm:text-[14px] rounded-lg border border-[#2B5BBB] focus:outline-none tracking-wider"/>
                 </div>
             </div>
-            <div class="px-2 bg-[#FFFFFF] border-b border-t border-[#EFEFEF] h-[60px] flex items-center px-4 max-xl:hidden ">
+            <div class="px-2 bg-[#F9F9F9] border-b border-t border-[#EFEFEF] h-[60px] flex items-center px-4 max-xl:hidden ">
             </div>
 
             <!-- 2 -->
-            <div class="label-box px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
+            <div class="label-box px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] py-2 flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">등록날짜</label>
                 <div class="w-2/3 flex flex-col">
                     <input type="date" v-model="registDate" readonly 
@@ -29,7 +29,7 @@
                     />
                 </div>
             </div>
-            <div class="label-box px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-2 flex items-center">
+            <div class="label-box px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] py-2 flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">접수마감</label>
                 <input type="date" placeholder="YYYY-MM-DD" v-model="postEnd"
                     :class="[
@@ -40,7 +40,7 @@
             </div>
 
             <!-- 3 -->
-            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-[6px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] after-white border-b border-[#EFEFEF] py-[6px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">과정명</label>
                 <div class="w-2/3 flex flex-col">
                     <div class="flex items-center gap-2 max-sm:gap-1">
@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] py-[6px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] py-[6px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">과정상태</label>
                 <DropUser
                     :options="statusOptions.map(o => o.label)"
@@ -62,7 +62,7 @@
             </div>
 
             <!-- 4 -->
-            <div class="px-2 bg-[#F9F9F9] after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">연수주관</label>
                     <div class="w-2/3 flex gap-0">
                     <input v-model="type" type="radio" name="type" id="academy" value="연수원" class="hidden peer/academy" />
@@ -75,7 +75,7 @@
                     </label>
                     <input v-model="type" type="radio" name="type" id="research" value="연구회" class="hidden peer/research" />
                     <label for="research"
-                        class="flex-1 text-center cursor-pointer px-4 py-2 text-[18px] after-small max-sm:leading-[2] border-t border-b border-r 
+                        class="flex-1 h-[45px] text-center cursor-pointer px-4 py-2 text-[18px] after-small max-sm:leading-[2] border-t border-b border-r 
                                 border-[#B5B5B5] text-[#B5B5B5] bg-[#F3F3F3] 
                                 peer-checked/research:bg-[#EDF3FF] peer-checked/research:text-[#2B5BBB] peer-checked/research:border-[#2B5BBB]
                                 rounded-r-lg">
@@ -83,21 +83,23 @@
                     </label>
                 </div>
             </div>
-            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">직무</label>
                 <DropUser
                     :options="positionOptions"
                     v-model="position"
                 />
             </div>
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+
+            <!-- 5 -->
+            <div class="px-2 bg-[#F9F9F9] after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">종목</label>
                 <DropUser
                     :options="divisionOptions"
                     v-model="division"
                 />
             </div>
-            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">과정
                 </label>
                 <DropUser
@@ -106,8 +108,8 @@
                 />
             </div>
 
-            <!-- 5 -->
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <!-- 6 -->
+            <div class="px-2 bg-[#FEFEFE] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">적용년도</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="year" placeholder="2025 (숫자만 입력)"
@@ -118,7 +120,7 @@
                     />
                 </div>
             </div>
-            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FEFEFE] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">학기
                 </label>
                 <DropUser
@@ -128,7 +130,7 @@
             </div>
 
             <!-- 6 -->
-            <div class="px-2 bg-[#FFFFFF] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">회차
                 </label>
                 <DropUser
@@ -136,7 +138,7 @@
                     v-model="round"
                 />
             </div>
-            <div class="px-2 bg-[#F9F9F9] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
                     요일
                 </label>
@@ -148,7 +150,7 @@
             
 
             <!-- 7 -->
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FEFEFE] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">이수시간</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="hour" placeholder="30 (숫자만 입력)"
@@ -159,7 +161,7 @@
                     />
                 </div>
             </div>
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FEFEFE] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">학점</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="grade" placeholder="3 (숫자만 입력)"
@@ -172,7 +174,7 @@
             </div>
             
             <!-- 8 -->
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">수강료</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="tuitionFee" placeholder="140000 (숫자만 입력)"
@@ -183,7 +185,7 @@
                     />
                 </div>
             </div>
-            <div class="px-2 bg-[#FFFFFF] border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">지원비</label>
                 <div class="w-2/3 flex items-center gap-2 max-sm:gap-1">
                         <input type="number" v-model="applicationFee" placeholder="200000 (숫자만 입력)"
@@ -197,7 +199,7 @@
 
 
             <!-- 9 -->
-            <div class="px-2 py-[6px] bg-[#FFFFFF] border-b border-[#EFEFEF] flex items-center">
+            <div class="px-2 py-[6px] bg-[#FEFEFE] border-b border-[#EFEFEF] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
                 연수기간
                 </label>
@@ -216,7 +218,7 @@
                     />
                 </div>
             </div>
-            <div class="px-2 bg-[#F9F9F9]  after-white border-b border-[#EFEFEF] h-[60px] flex items-center">
+            <div class="px-2 bg-[#FEFEFE] after-gray border-b border-[#EFEFEF] h-[60px] flex items-center">
                 <label class="w-1/3 px-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929]">
                     교육장소
                 </label>
@@ -226,7 +228,21 @@
                     />
                 </div>
             </div>
-
+            <div
+                class="bg-[#F9F9F9] after-white context-wrap px-2 py-2 flex items-center max-sm:h-[100px]">
+                <div class="context-label w-1/6 max-xl:w-1/4 max-sm:justify-start max-sm:w-full ">
+                    <label
+                        class="p-4 x-4 max-sm:px-0 text-[18px] after-small font-bold text-[#292929] flex items-center py-4 xl:hidden">교육내용</label>
+                </div>
+            </div>
+            <div
+                class="context-container col-span-2 max-xl:col-span-1 max-xl:flex max-xl:flex-col px-2 bg-[#F9F9F9] border-b border-[#EFEFEF] h-[500px] w-full grid grid-cols-6">
+                <label
+                    class="tiny-mc col-span-1 px-4 max-sm:px-0 text-[18px] max-sm:text-[15px] font-bold text-[#292929] flex items-center py-4 max-xl:hidden">교육내용</label>
+                <div class="h-full w-full col-span-5">
+                    <TinyEditor v-model="content" />
+                </div>
+            </div>
         </div>
 
         <div class="border-t-[2px] border-[#2B5BBB] mt-5"></div>
@@ -275,7 +291,7 @@
     import DropUser from '../../components/Drop/User.vue'
     import { useToast } from 'vue-toastification'
     import { useRouter } from 'vue-router';
-
+    import TinyEditor from '../../../components/TinyEditor.vue'
     import DropEduPlace from '../../../components/Drop/EduPlace.vue'; 
     const eduPlace = ref([]);
 
@@ -325,7 +341,7 @@
     const semesterOptions = ['선택하세요', '1학기', '하계', '2학기', '동계'];
     const semester = ref('')
 
-    const dayOptions = ['선택하세요', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+    const dayOptions = ['선택하세요', '해당없음', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
     const day = ref('')
 
 
@@ -342,8 +358,8 @@
         // API 요청을 위한 데이터(페이로드) 준비
         const payload = {
             // user_id: 1, // 예시: 사용자 ID, 실제로는 인증된 사용자 ID를 사용해야 함
-            order : 0,
-            opening : 1,
+            // order: 1,
+            opening: selectedStatusObj.value ? selectedStatusObj.value.value : null,
             course_code: course_code.value,
             course_name: title.value,
             status: selectedStatusObj.value ? selectedStatusObj.value.value : null,
@@ -362,6 +378,7 @@
             course_end: trainEndDate.value,     // YYYY-MM-DD 형식
             course_post_end: postEnd.value, // 접수 종료일로 가정. 접수 시작일이 별도 필드면 추가해야 함.
             content: content.value,
+            status: course.value === '선택하세요' ? null : course.value,
             // course_place는 API에서 배열을 예상하므로 배열로 보냅니다.
             course_place: eduPlace.value === '선택하세요' || !eduPlace.value ? null : [eduPlace.value],
             // created_at 및 updated_at은 일반적으로 백엔드에서 설정하므로 프론트엔드에서 보낼 필요 없음
@@ -407,7 +424,7 @@
         }
     }
 
-    // 취소 버튼 클릭 시 호출될 함수
+    // ✅ 취소 버튼 클릭 시 호출될 함수
     const cancelForm = () => {
         router.push('/training/manage'); // Manage > index.vue 로 이동
     };
@@ -426,7 +443,6 @@
     const pageTitle = useState('pageTitle')
         onMounted(async () => {
             pageTitle.value = '연수등록'
-            fetchOfficeOptions();
     })
 </script>
 
@@ -435,7 +451,25 @@
     .mob-br {
         display: none;
     }
-
+    .context-wrap {
+        grid-column: span 2 / span 2; /* col-span-2 */
+    }
+    .button-wrap {
+        display: flex;
+        width: 83.3333%; /* w-5/6 */
+        gap: 0.5rem;      /* gap-2 */
+    }
+    .context-container {
+        grid-column: span 2 / span 2; /* col-span-2 */
+        display: grid;                /* grid */
+        grid-template-columns: repeat(6, minmax(0, 1fr)); /* grid-cols-6 */
+    }
+    .context-label { 
+        width: 16.666667%;
+    }
+    .tiny-mc { 
+        grid-column: span 1 / span 1;
+    }
     @media (max-width: 1280px) {
         .box {
             display: grid;
@@ -452,6 +486,17 @@
         }
         .wrap {
             width: 80%;
+        }
+        .context-wrap {
+            grid-column: span 1 / span 1;
+        }
+        .context-container {
+            grid-column: span 1 / span 1;   
+            display: flex;                  
+            flex-direction: column;     
+        }
+        .context-label {
+            width: 38%; 
         }
     }
     @media (max-width: 767px) {
@@ -482,6 +527,22 @@
         }
         .tighter {
             letter-spacing: -1px;
+        }
+        .button-wrap {
+            width: 100%;    /* max-sm:w-full */
+            gap: 0.25rem;   /* max-sm:gap-1 */
+        }
+        .context-label {
+
+            width: 30%; /* max-sm:w-full */
+            justify-content: flex-start; /* max-sm:justify-start */
+        }
+    }
+    @media (max-width: 480px) {
+        .context-wrap {
+            flex-direction: column; /* max-sm:flex-col */
+            height: 100px;
+            align-items: flex-start; /* max-sm:items-start */
         }
     }
 

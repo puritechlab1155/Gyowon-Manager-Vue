@@ -3,13 +3,13 @@
         class="list-box flex justify-between gap-3 md:min-w-[1024apx] max-md:flex-col max-sm:p-3 bg-gray-100 p-5 bg-white rounded-xl shadow border border-[#E3E6EA]">
         <div class="w-[2%] mt-2">
         <CheckboxItem
-            :checked="selectedItems.includes(data.number)"
-            @change="(e) => toggleItem(data.number, e.target.checked)"
+            :checked="selectedItems.includes(data.id)"
+            @change="(checked) => toggleItem(data.id, checked)"
             :label="data.title"
         />
         </div>
         <div class="w-[98%] max-sm:w-full">
-            <div class="flex items-start justify-between gap-5">
+            <div class="flex items-start justify-between gap-2">
                 <div class="flex flex-col">
                 <div class="title-box flex items-center justify-start gap-2 max-lg:gap-1 max-lg:flex-col-reverse">
                     <span class="title paperlogy training-title font-medium text-[30px] text-[#2B5BBB] text-[#292929]">
@@ -27,7 +27,7 @@
                 <div class="flex items-center gap-2 max-lg:flex-col">
                     <DropStatus v-model="selectedStatus" height="45px" width="105px"/>
                     <div class="flex justify-between gap-2">
-                        <BtnEdit :to="`/Manager/Edit/${data.id}`" />
+                        <BtnEdit :to="`/Training/Edit/${data.id}`" />
                         <BtnDiscard @click="openDeleteModal(data)" />
                     </div>
                 </div>
@@ -83,11 +83,11 @@
                 </button>
             </div>
             <!-- 토글 콘텐츠 -->
-            <div v-show="showDetails" class="mt-8">
+            <div v-show="showDetails" class="pb-4">
                 <span class="w-20 text-[#727272]">연수내용</span>
-                <ul class="list-disc ml-5 mt-2 space-y-1">
-                    <li v-for="(line, index) in parsedContent" :key="index">{{ line }}</li>
-                </ul>
+                <div class="mt-2 py-4 px-8 w-[96%] rounded-lg bg-[#F9F9F9] text-[18px] text-[#292929] border border-[#DBDEE3]">
+                    <div v-html="parsedContent" style="line-height: 1.2;"/>
+                </div>               
             </div>
         </div>
     </div>
@@ -125,15 +125,16 @@
         data: Object,
         selectedItems: Array,
         toggleItem: Function,
-        trainingList: Array
+        trainingList: Array,
+        openingText: String 
     })
-
+    const emit = defineEmits(['deleted'])
     const isChecked = computed(() => {
-        return props.selectedItems.includes(props.data.number)
+        return props.data?.id && props.selectedItems.includes(props.data.id)
     })
 
     const handleCheckboxChange = (checked) => {
-        props.toggleItem(props.data.number, checked)
+        props.toggleItem(props.data.id, checked)
     }
 
     // // ✅ 날짜수정
@@ -153,7 +154,7 @@
         return `${start} ~ <br class='mob-br'> ${end}`
     })
 
-    const selectedStatus = ref('')
+    const selectedStatus = ref(props.openingText)
 
     const getSubjectBadge = (subject) => {
             switch (subject) {
@@ -176,15 +177,29 @@
 
     // ✅ 연수내용
     const parsedContent = computed(() => {
-        if (!props.data?.content) return [];
+        if (!props.data?.content) return '';
 
-        const lines = props.data.content
-            .replaceAll('\\r\\n', '\n')     // 줄바꿈 처리
-            .split('\n')                    // 줄별로 분리
-            .map(line => line.trim())      // 공백 제거
-            .filter(line => line.length);  // 빈 줄 제거
+        return props.data.content
+        // 1. 역슬래시 이스케이프 복원
+        .replace(/\\r\\n/g, '\n')        // \r\n 복원
+        .replace(/\\n/g, '\n')          // \n 복원
+        .replace(/\\n/g, '') 
+        .replace(/\\"/g, '"')            // \" 복원
+        .replace(/\\'/g, "'")            // \' 복원
+        .replace(/\\\\/g, '\\')          // \\ 복원
+        .replace(/\*(.+?)\*/g, '<strong>$1</strong>') // *강조* → <strong>강조</strong> 변환
+        .replace(/\r?\n/g, '</p><p>') // 줄바꿈을 </p><p>로 변환
 
-        return lines;
+        // 2. font-size 스타일 제거
+        .replace(/font-size:\s*[^;"]+;?/gi, '')
+
+
+        .trim()
+
+        // 3. 앞뒤에 <p> 추가 (열고 닫기)
+        .replace(/^/, '<p>')
+        .replace(/$/, '</p>');
+
     });
 
     // ✅ 토글버튼
@@ -218,6 +233,9 @@
             document.body.style.overflow = ''
         }
     })
+    watch(() => props.openingText, (newVal) => {
+        selectedStatus.value = newVal
+    })
 
     const token = useCookie('auth_token').value;
 
@@ -237,19 +255,17 @@
                 throw new Error(errorData.message || '삭제 실패')
             }
 
-            // 성공 시 로컬 데이터에서도 제거
-            trainingList.value = trainingList.value.filter(
-                (item) => item.id !== selectedTrainingItem.value.id
-            )
-            toast.success('연수가 성공적으로 삭제되었습니다.')
-            isDeleteModalVisible.value = false
 
             emit('deleted', selectedTrainingItem.value.id)
+            isDeleteModalVisible.value = false
+            toast.success('연수가 성공적으로 삭제되었습니다.')
 
         } catch (error) {
             toast.error(`삭제 중 오류가 발생했습니다: ${error.message}`)
         }
     }
+
+
 
     </script>
 
@@ -266,7 +282,7 @@
                 align-items: start;
             }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .info {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -276,7 +292,10 @@
                 align-items: flex-start;
             }
             .title {
-                font-size: 25px;
+                font-size: 24px;
+            }
+            .text-xs {
+                font-size: 16px;
             }
         }
 

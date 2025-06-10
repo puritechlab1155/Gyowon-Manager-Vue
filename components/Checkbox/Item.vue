@@ -31,6 +31,10 @@
 </template>
 
 <script setup>
-    defineProps(['checked', 'label'])
+    const props = defineProps({
+        checked: Boolean,
+        label: String,
+        data: Object
+    })
     defineEmits(['change'])
 </script>

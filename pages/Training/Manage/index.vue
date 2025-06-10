@@ -1,13 +1,22 @@
 <template>
     <div class="pt-5 pb-5 max-lg:flex max-lg:flex-col-reverse">
-        <div class="top w-full flex items-center justify-between max-lg:mt-[15px] max-2xl:flex-col max-2xl:items-stretch max-2xl:gap-5 max-lg:flex-col-reverse">
+        <div class="top w-full flex items-center justify-between max-lg:mt-[15px]  max-2xl:flex-col max-2xl:items-start max-2xl:gap-2 max-lg:flex-col-reverse">
             <!-- left-content -->
             <TrainingTab :tabs="tabs" 
                         :selectedTab="activeTab" 
                         @update:selectedTab="val => activeTab = val" />
             <div v-if="activeTab === 'academy'"></div>
             <div v-else-if="activeTab === 'research'"></div>
-            <div id="selectedFilters" class="flex flex-wrap gap-2 mt-2 block lg:hidden"></div>
+            <div id="selectedFilters" class="flex flex-wrap justify-start gap-2 mt-2 block lg:hidden">
+                <div
+                    v-for="(value, key) in appliedFilters"
+                    :key="key"
+                    class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2 text-base"
+                >
+                    {{ value }}
+                    <span class="cursor-pointer text-[#2B5BBB] text-base" @click="removeFilter(key)">✕</span>
+                </div>
+            </div>
             
             <!-- right-content (탭들) -->
             <div class="right-content flex justify-end text-lg gap-2 max-2xl:self-end max-lg:justify-between max-lg:w-full">
@@ -23,7 +32,7 @@
                         <SearchBar placeholder="과정명을 입력하세요." @search="onSearch"/>
                     </div>
                     <div class="filter hidden max-lg:block">
-                        <button id="filterButton w-full max-lg:col-span-1 "
+                        <button @click="openFilterModal"
                             class="text-[#202020] flex justify-between items-center px-1 py-3 max-sm:py-2 w-full rounded-md bg-[#ECECEC]">
                             <div class="w-14 text-center min-w-[30px]">필터</div>
                             <img class="w-8 h-6" src="../../../assets/img/filter.png" alt="필터 아이콘" />
@@ -57,67 +66,55 @@
     <div class="list-wrap w-full flex flex-col gap-10 overflow-x-auto">
         <TrainingCard
             v-for="item in filteredTrainingList"
-            :key="item.number"
+            :key="item.id"
             :data="item"
             :selectedItems="selectedTrainingItems"
             :toggleItem="toggleTrainingItem"
-            @deleted="handleDeleted"
+            @deleted="handleDeleted"  
+            :opening-text="item.openingText" 
         />
     </div>
-    <div class="flex justify-center items-center mt-4 mt-[100px]">
-        <!-- 이전 / 다음 버튼 그룹 -->
-        <div class="flex items-center space-x-3 max-lg:space-x-1">
-            <button
-                class="px-2 py-4 max-sm:py-2 max-sm:px-2 text-[#727272] rounded-md flex items-center justify-center group">
-                <svg width="12" height="20" viewbox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-[#727272] group-hover:fill-[#2B5BBB]">
-                    <path d="M0.68629 9.89949L10.5858 19.799L12 18.3848L3.51471 9.8995L12 1.41421L10.5858 -6.18172e-08L0.68629 9.89949Z"/>
-                    
-                </svg>
-                <span class="hidden lg:inline-block group-hover:text-[#2B5BBB] group-hover:font-semibold ml-2">이전</span>
-            </button>
+    <p>현재 페이지: {{ currentPage }}</p>
+    <p>총 페이지: {{ totalPages }}</p>
+    <Pagenation
+        :currentPage="currentPage"
+        :totalPages="totalPages"
+        @update:currentPage="page => currentPage = page"
+    />
 
-            <!-- 페이지 번호들 -->
-            <div class="flex space-x-2 max-lg:space-x-2">
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    1
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    2
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:text-[#EDF3FF]">
-                    3
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    4
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    5
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    6
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    7
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    8
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    9
-                </button>
-                <button class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    10
-                </button>
-            </div>
-            <!-- 다음 버튼 -->
-            <button class="px-2 py-4 max-sm:py-2 max-sm:px-2 text-[#727272] rounded-md flex items-center justify-center group">
-                <span class="hidden lg:inline-block group-hover:text-[#2B5BBB] group-hover:font-semibold mr-2">다음</span>
-                <svg width="12" height="20" viewbox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-[#727272] group-hover:fill-[#2B5BBB]">
-                    <path d="M11.3137 10.1005L1.41423 0.201019L2.07232e-05 1.61523L8.48529 10.1005L1.68643e-08 18.5858L1.41421 20L11.3137 10.1005Z"/>
-                </svg>
+    <!-- 필터 모달 -->
+    <transition name="slide-fade">
+        <div
+            v-if="filterModalOpen"
+            class="fixed inset-0 top-[60px] bg-white z-[900] overflow-y-auto"
+        >
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-medium paperlogy text-[26px]">검색 조건 설정</h2>
+            <button @click="closeModal">
+                <img src="../../../assets/img/close.png" alt="닫기" class="w-5 h-5" />
             </button>
+            </div>
+
+            <div class="p-8">
+                <div class="flex flex-col gap-2">
+                    <DropYear v-model="filters.year" class="w-full"/>
+                    <DropSemester v-model="filters.semester" class="w-full"/>
+                    <DropPosition v-model="filters.position" class="w-full"/>
+                    <DropCourse v-model="filters.course" :options="courseOptions" class="w-full" />
+                </div>
+
+                <!-- 버튼 그룹 -->
+                <div class="flex gap-4 mt-6">
+                    <button @click="cancelFilters" class="flex-1 py-3 bg-[#F5F5F5] border border-[#DBDEE3] font-medium rounded-md">
+                    취소
+                    </button>
+                    <button @click="applyFilters" class="flex-1 py-3 bg-[#2B5BBB] hover:bg-[#1d4691] text-white font-semibold rounded-md">
+                    적용
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </transition>
 </template>
 
 
@@ -137,8 +134,9 @@
     import { useRouter } from 'vue-router';
     import { useCheckboxGroup } from '../../../composables/useCheckboxGroup'
     import CheckboxAll from '~/components/Checkbox/All.vue'
+    import { useToast } from 'vue-toastification'  
 
-
+    const toast = useToast()
 
     // const trainingList = ref([
     // {
@@ -199,14 +197,74 @@
     const selectedPosition = ref('');
     const selectedCourse = ref('');
     const selectedStatus = ref('')
-
-    const courseOptions = ref([]);
+    const statusToOpening = {
+            '접수중': 1,
+            '접수마감': 0,
+            '과정종료': null,
+        }
+    const courseOptions = ref([])
 
     const activeTab = ref('academy');
     const trainingList = ref([]);
     const searchQuery = ref('');
     const selectedItems = ref([]);
     const isLoading = ref(false); 
+
+    const currentPage = ref(1);
+    const totalPages = ref(1);
+    const perPage = 15; 
+
+
+    // ✅ 필터
+    const filterModalOpen = ref(false)
+
+    // 현재 선택 중인 필터 값
+    const filters = reactive({
+        year: '',
+        semester: '',
+        position: '',
+        course: ''
+    })
+
+    // 적용된 필터 값 (화면에 보여질 값)
+    const appliedFilters = reactive({})
+
+    // 모달 열기/닫기
+    const openFilterModal = () => {
+        filterModalOpen.value = true
+    }
+    const closeFilterModal = () => {
+        filterModalOpen.value = false
+    }
+
+    // 필터 적용
+    const applyFilters = () => {
+        Object.keys(filters).forEach((key) => {
+            if (filters[key] !== '' && filters[key] !== '선택') {
+                appliedFilters[key] = filters[key]
+            } else {
+                delete appliedFilters[key]
+            }
+        })
+        closeFilterModal();
+        fetchTrainings();
+    }
+
+    // 필터 취소 (filters 초기화)
+    const cancelFilters = () => {
+        Object.keys(filters).forEach((key) => {
+            filters[key] = ''
+        })
+        closeFilterModal();
+        fetchTrainings();
+    }
+
+    // ✕ 클릭 시 필터 삭제
+    const removeFilter = (key) => {
+        delete appliedFilters[key]
+        filters[key] = ''
+        fetchTrainings();
+    }
 
 
     const tabs = [
@@ -216,52 +274,73 @@
 
     const token = useCookie('auth_token').value;
 
+    // ✅ 과정명 불러오기
     async function fetchCourseNames() {
         const year = selectedYear.value;
         const semester = selectedSemester.value;
         const position = selectedPosition.value;
+        const tab = activeTab.value; 
 
         const invalid = !year || year === '선택' ||
                         !semester || semester === '선택' ||
                         !position || position === '선택';
 
         if (invalid) {
-            courseOptions.value = [];
-            selectedCourse.value = '';
+            courseOptions.value = ['선택'];
+            selectedCourse.value = '선택';
             await fetchTrainings(); // ⬅ 여기 추가
             return;
         }
 
+        const rangeLabel = tabs.find(t => t.id === tab)?.label || '';
+
         const params = new URLSearchParams({
+            range: rangeLabel,    
             application_year: year,
             semester: semester,
             job_classification: position,
         });
 
-        const url = `http://localhost:8000/api/admin/courses/course-names?${params.toString()}`;
+        const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
+        console.log('API 호출 URL:', url);
 
         try {
             const { data, error } = await useFetch(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            transform: res => res.data.course_names || [], // 백엔드에서 course_names 배열을 준다고 가정
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                transform: (res) => {
+                console.log('API raw response:', res);
+                // res가 response body라면
+                const courseNames = (res.data || []).map(item => item.course_name);
+                return ['선택', ...courseNames]
+                }
+
             });
 
             if (error.value) {
-            console.error('과정명 리스트 조회 실패:', error.value);
-            courseOptions.value = [];
-            selectedCourse.value = '';
-            return;
+                console.error('과정명 리스트 조회 실패:', error.value);
+                courseOptions.value = ['선택']; // Add '선택' option even on error
+                selectedCourse.value = '선택';
             }
+            else {
+            // 이전에 'const courseOptions.value = data.value;' 였던 부분을 수정
+            courseOptions.value = data.value; // 'courseOptions.value'는 이미 ref로 선언됨
+            
+            const currentSelectedCourse = selectedCourse.value;
+            // 현재 선택된 과정명이 새로운 목록에 없거나 '선택'이면 초기화
+            if (!currentSelectedCourse || currentSelectedCourse === '선택' || !courseOptions.value.includes(currentSelectedCourse)) {
+                selectedCourse.value = '선택';
+            }
+        }
 
-            courseOptions.value = data.value;
-            selectedCourse.value = ''; // 과정명 선택 초기화
+            console.log('과정명 리스트:', courseOptions.value);
+            await fetchTrainings(); // ⬅ 여기 추가
 
         } catch (e) {
             console.error('fetchCourseNames 에러:', e);
-            courseOptions.value = [];
-            selectedCourse.value = '';
+            courseOptions.value = ['선택']; // Add '선택' option on catch error
+            selectedCourse.value = '선택';
         }
     }
 
@@ -271,12 +350,15 @@
         '자율': '자율',
     };
 
+
+    // ✅ 연수과정 불러오기
     async function fetchTrainings() {
         isLoading.value = true;
         try {
             const query = searchQuery.value.trim();
             const tab = activeTab.value === 'academy' ? '연수원' : '연구회';
             const params = new URLSearchParams();
+
             if (query) params.append('filter[search]', query);
             params.append('range', tab); // 항상 탭 필터 적용
 
@@ -301,6 +383,9 @@
                 params.append('status', selectedStatus.value);
             }
 
+            // 페이지 번호 쿼리 추가
+            params.append('page', currentPage.value);
+
             const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
             
             const { data, error } = await useFetch(url, {
@@ -308,6 +393,13 @@
                     Authorization: `Bearer ${token}`,
                 },
                 transform: (response) => {
+                    console.log('meta:', response.meta);
+                    if (response.meta && response.meta.last_page) {
+                            totalPages.value = response.meta.last_page;
+                        } else {
+                            totalPages.value = 1; // 기본값
+                        }
+                    console.log('totalPages.value set to:', totalPages.value);
                     // 실제 강의 배열은 response.data에 있음
                     const courses = response.data;
 
@@ -315,7 +407,10 @@
                         id: course.id,                                   // course 고유 ID  768
                         userId: course.user_id,                          // user_id 1
                         order: course.order,                             // order   null
-                        opening: course.opening || '-',                  // opening  "1"
+                        opening: course.opening || '-',
+                        openingText: String(course.opening) === "1" ? "접수중"
+                        : String(course.opening) === "0" ? "접수마감"
+                        : "과정종료",             // opening  "1"
                         job: course.job_classification 
                         ? course.job_classification.replace('직무', '').trim() 
                         : '-',                                           // job_classification "서울직무"
@@ -377,12 +472,52 @@
         searchQuery.value = query; // 상태만 바꾸기
     }
 
+
+
+
+    // filters -> 드롭다운
+     watch(() => filters.year, (val) => {
+        if (selectedYear.value !== val) selectedYear.value = val;
+    });
+    watch(() => filters.semester, (val) => {
+        if (selectedSemester.value !== val) selectedSemester.value = val;
+    });
+    watch(() => filters.position, (val) => {
+        if (selectedPosition.value !== val) selectedPosition.value = val;
+    });
+    watch(() => filters.course, (val) => {
+        if (selectedCourse.value !== val) selectedCourse.value = val;
+    });
+
+    // 드롭다운 -> filters
+    watch([selectedYear, selectedSemester, selectedPosition, selectedCourse], ([newYear, newSemester, newPosition, newCourse]) => {
+        // 필터 객체 업데이트
+        filters.year = newYear === '선택' ? null : newYear;
+        filters.semester = newSemester === '선택' ? null : newSemester;
+        filters.position = newPosition === '선택' ? null : newPosition;
+        filters.course = newCourse === '선택' ? null : newCourse;
+
+        // appliedFilters를 즉시 업데이트
+        Object.keys(filters).forEach((key) => {
+            if (filters[key] !== null && filters[key] !== '') {
+                appliedFilters[key] = filters[key];
+            } else {
+                delete appliedFilters[key];
+            }
+        });
+
+        // fetchCourseNames는 year, semester, position 변경 시에만 호출
+        // fetchTrainings는 모든 필터 변경 시 호출되도록 이미 되어있음
+        // 이 watch 블록 끝에서 fetchTrainings가 호출되므로 추가 호출 필요 없음
+    });
+
+
     // searchQuery 또는 activeTab 바뀌면 자동으로 fetchTrainings 호출
     watch([selectedYear, selectedSemester, selectedPosition], () => {
         fetchCourseNames();
     });
     watch(
-        [searchQuery, activeTab, selectedYear, selectedSemester, selectedPosition, selectedCourse, selectedStatus],
+        [searchQuery, activeTab, selectedYear, selectedSemester, selectedPosition, selectedCourse, selectedStatus, currentPage],
         () => {
             fetchTrainings();
         },
@@ -399,11 +534,11 @@
             return true;
         });
 
-        filtered.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0); // 날짜가 없으면 가장 오래된 날짜로 간주
-            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-            return dateB.getTime() - dateA.getTime(); // 내림차순 정렬 (최신이 위로)
-        });
+        // filtered.sort((a, b) => {
+        //     const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0); // 날짜가 없으면 가장 오래된 날짜로 간주
+        //     const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        //     return dateB.getTime() - dateA.getTime(); // 내림차순 정렬 (최신이 위로)
+        // });
 
         return filtered;
     });
@@ -416,11 +551,11 @@
         toggleSelectAll,
     } = useCheckboxGroup(filteredTrainingList)
 
-    const toggleItem = (number, checked) => {
+    const toggleItem = (id, checked) => {
         if (checked) {
-            selectedItems.value.push(number)
+            selectedItems.value.push(id)
         } else {
-            selectedItems.value = selectedItems.value.filter(n => n !== number)
+            selectedItems.value = selectedItems.value.filter(n => n !== id)
         }
     }
 
@@ -433,10 +568,53 @@
         console.log('전체선택 상태:', newVal)
     })
 
-    // ✅ 일괄적용 추후에 작업
-    function onApply() {
-    // 버튼 클릭 시 처리할 로직
+    // ✅ 삭제기능
+    const handleDeleted = (deletedId) => {
+        trainingList.value = trainingList.value.filter(item => item.id !== deletedId)
+    // 또는 전체 새로고침
+    // fetchTrainings();
+    }
+
+    // ✅ 일괄적용 
+    async function onApply() {
+        const selectedIds = selectedTrainingItems.value;
+
+        const openingStatus = statusToOpening[selectedStatus.value];  // 숫자형 or null
+
+        const idsPayload = [selectedIds.length, ...selectedIds];
+        console.log('보낼 데이터:', {
+            opening: openingStatus,
+            ids: idsPayload,
+        });
+        // 버튼 클릭 시 처리할 로직
         console.log('일괄적용 버튼 클릭됨')
+
+        try {
+            const response = await fetch('http://localhost:8000/api/admin/courses/posts-public', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    opening: openingStatus,
+                    ids: idsPayload,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('서버 응답 에러');
+            }
+
+            const result = await response.json();
+            console.log('서버 응답:', result);
+            toast.success(`${selectedIds.length}개의 강의가 "${selectedStatus.value}" 상태로 적용되었습니다.`)
+            await fetchTrainings();
+            
+        } catch (error) {
+            console.error('fetch 에러:', error);
+            toast.error(`적용 중 오류가 발생했습니다: ${error.message}`)
+        }
     }
 
     // ✅ 페이지 타이틀 설정
@@ -464,6 +642,15 @@
 
 
 <style scoped>
+    .slide-fade-enter-active,
+    .slide-fade-leave-active {
+        transition: all 0.3s ease;
+    }
+    .slide-fade-enter-from,
+    .slide-fade-leave-to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
     .btn {
         padding-top: 0.75rem;
         padding-right: 1.7rem;
@@ -476,6 +663,12 @@
         }
         .right-content {
             justify-content: start;
+        }
+    }
+    @media (max-width: 1024px) {
+
+    .top {
+        align-items: flex-start;
         }
     }
 </style>

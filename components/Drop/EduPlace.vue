@@ -6,7 +6,7 @@
             <button
             @click="toggleDropdown"
             :class="[
-                    'dropdown-button border border-[#DBDEE3] text-[#727272] text-[18px] py-2.5 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center',
+                    'dropdown-button border border-[#DBDEE3] text-[#727272] text-[18px] py-2 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center',
                     modelValue.length ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'
                 ]"
             type="button"
@@ -123,6 +123,10 @@
     @media (max-width: 767px) {
         .selected-option {
             font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%;
         }
     }
 </style>

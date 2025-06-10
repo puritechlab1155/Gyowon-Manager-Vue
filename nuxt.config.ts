@@ -10,7 +10,8 @@ export default defineNuxtConfig({
     ],
   ],
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css',
+  ],
   runtimeConfig: {
     public: {
       backendUrl: 'http://localhost:8000', //TODO for local development,
