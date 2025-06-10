@@ -476,7 +476,7 @@
 
 
     // filters -> 드롭다운
-     watch(() => filters.year, (val) => {
+    watch(() => filters.year, (val) => {
         if (selectedYear.value !== val) selectedYear.value = val;
     });
     watch(() => filters.semester, (val) => {

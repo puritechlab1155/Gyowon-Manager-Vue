@@ -19,7 +19,7 @@
                 </tr>
             </thead>
         </table>
-        <table :id="id" class="mt-4 min-w-[1280px] w-full  text-center border-collapse">
+        <table :id="id" class="mt-4 min-w-[1280px] w-full text-center border-collapse">
             <tbody class="rounded-[12px]">
                 <tr v-for="(row, index) in data" :key="row.id" 
                     class="text-[#727272] text-[18px] font-normal h-[70px] border-b border-gray-300">
