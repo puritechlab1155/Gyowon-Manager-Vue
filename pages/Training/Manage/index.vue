@@ -179,7 +179,7 @@
     };
 
     function onSearch(query) {
-        searchQuery.value = query; // 상태만 바꾸기
+        searchQuery.value = query; 
     }
 
 

@@ -3,24 +3,31 @@
         <div class="max-lg:flex max-lg:flex-col-reverse">
             <div
                 class="w-full flex justify-end max-lg:mt-[20px] max-2xl:flex-col max-2xl:items-stretch max-2xl:gap-5 max-xl:flex-col-reverse">
-                <div id="selectedFilters"
-                    class="flex h-auto gap-2 mt-2 block lg:hidden whitespace-nowrap overflow-x-auto no-scrollbar">
+                <div id="selectedFilters" class="flex flex-wrap justify-start gap-2 mt-2 block lg:hidden">
+                    <div
+                        v-for="(value, key) in appliedFilters"
+                        :key="key"
+                        class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2 text-base"
+                    >
+                        {{ value }}
+                        <span class="cursor-pointer text-[#2B5BBB] text-base" @click="removeFilter(key)">✕</span>
+                    </div>
                 </div>
                 <!-- right-content (탭들) -->
                 <div class="right-content flex justify-end text-lg gap-2 max-2xl:self-end max-lg:justify-between max-lg:w-full">
                     <div class="flex justify-between gap-2 max-lg:hidden">
                         <DropYear v-model="selectedYear"/>
                         <DropSemester v-model="selectedSemester"/>
-                        <DropCourse v-model="selectedCourse"/>
-                        <DropPayStatus v-model="selectedPayStatus" height="55px" width="120px"/>
+                        <DropCourse v-model="selectedCourse" :options="courseOptions"/>
+                        <!-- <DropPayStatus v-model="selectedPayStatus" height="55px" width="120px"/> -->
                     </div>
                     <div
                     class=" flex justify-between items-center max-lg:grid max-lg:grid-cols-5 max-lg:gap-2 max-lg:w-full">
                     <div class="max-lg:col-span-4 w-full">
-                        <SearchBar placeholder="과정명을 입력하세요." @search="searchQuery = $event"/>
+                        <SearchBar placeholder="이름을 입력하세요." @search="searchQuery = $event"/>
                     </div>
                     <div class="filter hidden max-lg:block">
-                        <button id="filterButton w-full max-lg:col-span-1 "
+                        <button @click="openFilterModal"
                             class="text-[#202020] flex justify-between items-center px-1 py-3 max-sm:py-2 w-full rounded-md bg-[#ECECEC]">
                             <div class="w-14 text-center min-w-[30px]">필터</div>
                             <img class="w-8 h-6" src="../../assets/img/filter.png" alt="필터 아이콘" />
@@ -38,8 +45,13 @@
                     :modelValue="isAllSelected"
                     @update:modelValue="toggleSelectAll"
                 />         
-                <DropPayStatus v-model="selectedPayStatus" width="105px" height="50px"/>
-                <BtnUpdate @click="onApply" />
+                <DropPayStatus 
+                    v-model="selectedPayStatus" 
+                    width="105px" 
+                    height="50px"
+                    :options="paymentStatusOptions"
+                />
+                <BtnUpdate @click="onUpdateApply" />
             </div>
                 <!-- right-content (탭들) -->
                 <div
@@ -122,7 +134,12 @@
                                 <td class="px-2 py-2 w-[11%]" >
                                     <div class="flex items-center gap-2 flex-col">
                                         <div class="flex justify-center mt-2">
-                                            <DropPayStatus v-model="enroll.paymentStatus" width="105px" height="50px"/>
+                                            <DropPayStatus 
+                                                v-model="enroll.paymentStatus" 
+                                                width="105px" 
+                                                height="50px"
+                                                :options="paymentStatusOptions"
+                                                @update:modelValue="(newStatus) => updateIndividualPaymentStatus(enroll.id, newStatus)"/>
                                         </div>
                                         <div class="flex justify-between gap-3">
                                             <BtnEdit @click="openEditModal(enroll)"/>
@@ -144,6 +161,7 @@
             </div>
         </div>
     </div>
+
     <!-- 삭제 모달 -->
     <ModalDeleteConfirm
         :visible="isDeleteModalVisible"
@@ -162,77 +180,46 @@
         @save="handleSaveEdit"
     />
     <UserSlideRece v-if="showSlideRece" :user="selectedEnrollForReceipt" @close="showSlideRece = false" />
-    <div class="flex justify-center items-center mt-4 mt-[100px]">
-        <!-- 이전 / 다음 버튼 그룹 -->
-        <div class="flex items-center space-x-3 max-lg:space-x-1">
-            <button
-                class="px-2 py-4 max-sm:py-2 max-sm:px-2 text-[#727272] rounded-md flex items-center justify-center group">
-                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 fill-[#727272] group-hover:fill-[#2B5BBB]">
-                    <path
-                        d="M0.68629 9.89949L10.5858 19.799L12 18.3848L3.51471 9.8995L12 1.41421L10.5858 -6.18172e-08L0.68629 9.89949Z" />
-                </svg>
-                <span
-                    class="hidden lg:inline-block group-hover:text-[#2B5BBB] group-hover:font-semibold ml-2">이전</span>
-            </button>
 
-            <!-- 페이지 번호들 -->
-            <div class="flex space-x-2 max-lg:space-x-2">
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    1
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    2
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:text-[#EDF3FF]">
-                    3
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    4
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF] focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    5
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    6
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    7
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    8
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    9
-                </button>
-                <button
-                    class="w-12 h-12 max-sm:w-8 max-sm:h-8 max-lg:hidden flex items-center justify-center text-[#727272] font-medium rounded-md hover:bg-[#2B5BBB] hover:text-[#EDF3FF]  focus:bg-[#2B5BBB] focus:text-[#EDF3FF]">
-                    10
-                </button>
+
+    <!-- 필터 모달 -->
+    <transition name="slide-fade">
+        <div
+            v-if="filterModalOpen"
+            class="fixed inset-0 top-[60px] bg-white z-[900] overflow-y-auto"
+        >
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-medium paperlogy text-[26px]">검색 조건 설정</h2>
+            <button @click="closeModal">
+                <img src="../../../assets/img/close.png" alt="닫기" class="w-5 h-5" />
+            </button>
             </div>
-            <!-- 다음 버튼 -->
-            <button
-                class="px-2 py-4 max-sm:py-2 max-sm:px-2 text-[#727272] rounded-md flex items-center justify-center group">
-                <span
-                    class="hidden lg:inline-block group-hover:text-[#2B5BBB] group-hover:font-semibold mr-2">다음</span>
-                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 fill-[#727272] group-hover:fill-[#2B5BBB]">
-                    <path
-                        d="M11.3137 10.1005L1.41423 0.201019L2.07232e-05 1.61523L8.48529 10.1005L1.68643e-08 18.5858L1.41421 20L11.3137 10.1005Z" />
-                </svg>
 
-            </button>
+            <div class="p-8">
+                <div class="flex flex-col gap-2">
+                    <DropYear v-model="filters.year" class="w-full"/>
+                    <DropSemester v-model="filters.semester" class="w-full"/>
+                    <DropPosition v-model="filters.position" class="w-full"/>
+                    <DropCourse v-model="filters.course" :options="courseOptions" class="w-full" />
+                </div>
+
+                <!-- 버튼 그룹 -->
+                <div class="flex gap-4 mt-6">
+                    <button @click="cancelFilters" class="flex-1 py-3 bg-[#F5F5F5] border border-[#DBDEE3] font-medium rounded-md">
+                    취소
+                    </button>
+                    <button @click="applyFilters" class="flex-1 py-3 bg-[#2B5BBB] hover:bg-[#1d4691] text-white font-semibold rounded-md">
+                    적용
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </transition>
+    <Pagenation
+        :currentPage="currentPage"
+        :totalPages="totalPages"
+        @update:currentPage="page => currentPage = page"
+    />
         
 </template>
 
@@ -251,12 +238,18 @@
     import BandSeoul from '../../components/Band/Seoul.vue';
     import BandGyeonggi from '../../components/Band/Gyeonggi.vue';
     import { useCheckboxGroup } from '../../composables/useCheckboxGroup'
+    import { useToast } from 'vue-toastification'; 
 
+    const toast = useToast();
 
     const selectedYear = ref('')
     const selectedSemester = ref('')
     const selectedCourse = ref('')
     const selectedPayStatus = ref('')
+    const searchQuery = ref('')
+
+    const currentPage = ref(1);
+    const totalPages = ref(1);
 
     const showSlideRece = ref(false);
     const selectedEnrollForReceipt = ref(null);
@@ -289,16 +282,9 @@
     };
 
     // ✅ 원본 데이터
-    const rawData = {
-        all: 186,
-        입금: 120,
-        미입금: 50,
-        수강대기: 17,
-        수강확정: 120,
-        수강취소: 36,
-        수강연기: 137,
-        환불: 17
-    }
+    const rawData = ref({ // rawData도 반응형으로 변경하여 API 응답에 따라 업데이트되도록
+        all: 0, 입금: 0, 미입금: 0, 수강대기: 0, 수강확정: 0, 수강취소: 0, 수강연기: 0, 환불: 0
+    });
 
     // ✅ 탭 목록 정의
     const tabList = [
@@ -312,8 +298,21 @@
         { id: '환불', label: '환불' }
     ]
 
+    // ✅ 활성 탭 상태
+    const activeTab = ref('all')
 
-    const token = useCookie('auth_token').value
+    // ✅ count 포함된 탭 목록 계산
+    const tabsWithCount = computed(() =>
+        tabList.map(tab => ({
+            ...tab,
+            count: rawData[tab.id] || 0
+        }))
+    )
+    // ✅ 검색기능
+    function onSearch(query) {
+        searchQuery.value = query; // 상태만 바꾸기
+    }
+
     // ✅ 수강자 데이터를 저장할 ref 변수 선언
     const enrollList = ref([]);
     const isLoadingEnroll = ref(false);
@@ -335,33 +334,119 @@
         console.log('전체선택 상태:', newVal);
     });
 
+        
+    const token = useCookie('auth_token').value
+
+    // ✅ 과정명 드롭다운 옵션 불러오기
+    const courseOptions = ref([])
+    async function fetchCourseNames() {
+        const year = selectedYear.value;
+        const semester = selectedSemester.value;
+        const tab = activeTab.value; // activeTab을 필터링 기준으로 사용
+
+        // '선택'이거나 빈 문자열일 경우 API 호출하지 않고 초기화
+        const invalidYearOrSemester = !year || year === '선택' || !semester || semester === '선택';
+
+        if (invalidYearOrSemester) {
+            courseOptions.value = ['선택'];
+            selectedCourse.value = '선택';
+            console.log('년도 또는 학기가 선택되지 않아 과정명 API 호출을 건너뜁니다.');
+            return;
+        }
+
+        const params = new URLSearchParams({
+            application_year: year,
+            semester: semester,
+        });
+
+        const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
+        console.log('과정명 API 호출 URL:', url);
+
+        try {
+            // Nuxt.js 환경이므로 $fetch 대신 useFetch를 사용할 수 있습니다.
+            // 하지만 컴포저블 내부에서 $fetch를 직접 사용하는 경우도 있습니다. 여기서는 $fetch를 유지합니다.
+            const responseData = await $fetch(url, { // $fetch는 auto-imported 된다고 가정
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            
+            const rawCourses = responseData?.data || [];
+            const courseNames = [...new Set(rawCourses.map(item => item.course_name))];
+            console.log('불러온 과정명:', courseNames);
+            
+            courseOptions.value = ['선택', ...courseNames];
+
+            // 현재 선택된 과정명이 새로운 옵션 목록에 없으면 '선택'으로 초기화
+            if (!courseNames.includes(selectedCourse.value)) { // '선택' 옵션은 제외하고 비교
+                selectedCourse.value = '선택';
+            }
+        } catch (error) {
+            console.error('❌ 과정명 요청 에러 발생:', error);
+            courseOptions.value = ['선택'];
+            selectedCourse.value = '선택';
+            toast.error('과정명을 불러오는데 실패했습니다.');
+        }
+    }
+
+    watch([selectedYear, selectedSemester, activeTab], () => {
+        fetchCourseNames();
+    }, { immediate: true }); 
+
+
     // ✅ 수강자 데이터 불러오기
     const fetchEnrollData = async () => {
         isLoadingEnroll.value = true;
         try {
+            const requestParams = {};
+
+            // 탭 필터
+            if (activeTab.value && activeTab.value !== 'all') {
+                requestParams.tab = activeTab.value;
+            }
+
+            // 검색어 필터
+            if (searchQuery.value) {
+                requestParams['filter[search]'] = searchQuery.value;
+            }
+
+            // 년도 필터
+            if (selectedYear.value && selectedYear.value !== '선택') {
+                requestParams.application_year = selectedYear.value;
+            }
+
+            // 학기 필터
+            if (selectedSemester.value && selectedSemester.value !== '선택') {
+                requestParams.semester = selectedSemester.value;
+            }
+
+            // 과정명 필터
+            if (selectedCourse.value && selectedCourse.value !== '선택') {
+                requestParams.course_name = selectedCourse.value;
+            }
+
+            // 페이지네이션
+            requestParams.page = currentPage.value;
+            
+            console.log('✅ API 요청 파라미터:', requestParams); // 디버깅을 위해 추가
             const { data, error } = await useFetch('http://localhost:8000/api/admin/enrolls', {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`, // ✅ 토큰 쿠키로 인증
                     Accept: 'application/json',
                 },
-                params: {
-                    tab: '',
-                    'filter[search]': '',
-                    application_year: '',
-                    semester: '',
-                    course_name: '',
-                },
+                params: requestParams, 
             })
-
             if (error.value) {
-            console.error('❌ 에러 발생:', error.value);
-            enrollList.value = []; // 에러 발생 시 리스트 초기화
+                toast.error('수강자 데이터를 불러오는데 실패했습니다.');
+                enrollList.value = []; // 에러 발생 시 리스트 초기화
+                totalPages.value = 1; 
+                rawData.value = { all: 0, 입금: 0, 미입금: 0, 수강대기: 0, 수강확정: 0, 수강취소: 0, 수강연기: 0, 환불: 0 };
             } else {
                 // 📦 API에서 받은 원본 데이터 로깅 (확인용)
                 console.log('📦 받은 원본 데이터:', data.value);
 
-                // ✅ data.value.data가 배열인지 확인하고 처리
+                // data.value.data가 배열인지 확인하고 처리
                 if (data.value?.data && Array.isArray(data.value.data)) {
                     // 🚀 enrollList에 데이터 할당 및 콘솔에 예쁘게 출력
                     enrollList.value = data.value.data.map(item => {
@@ -400,6 +485,38 @@
                         return mappedItem;
                     });
 
+                    if (data.value?.meta) {
+                        totalPages.value = data.value.meta.last_page;
+
+                        Object.keys(rawData.value).forEach(key => {
+                            // 'all' 탭은 meta.total 값을 사용하고, 나머지는 0으로 초기화
+                            rawData.value[key] = (key === 'all') ? data.value.meta.total : 0;
+                        });
+                        data.value.data.forEach(item => {
+                            const status = item.payment?.pay_status;
+                            if (status && rawData.value.hasOwnProperty(status)) {
+                                // API의 status와 tabList의 id가 일치해야 합니다.
+                                // 예: API의 "확정" => tabList의 id '수강확정'에 매핑
+                                // API의 "대기" => tabList의 id '수강대기'에 매핑
+                                // 현재 API 응답의 `pay_status`는 "확정", "대기"로만 보입니다.
+                                // tabList의 id와 매핑 규칙이 필요합니다.
+                                // 여기서는 `pay_status`가 tabList의 `id`와 정확히 일치한다고 가정합니다.
+                                // 예: `pay_status`가 "입금"이면 `rawData.value.입금` 증가
+
+                                // API의 `pay_status` 값에 따라 `rawData.value`의 해당 속성을 증가시킵니다.
+                                // API의 "확정" -> '수강확정', "대기" -> '수강대기' 로 매핑합니다.
+                                let mappedStatus = status;
+                                if (status === '확정') mappedStatus = '수강확정';
+                                else if (status === '대기') mappedStatus = '수강대기'; // API 응답에 '대기'가 있다면
+                                // 기타 다른 상태도 이곳에 매핑 규칙을 추가할 수 있습니다.
+                                
+                                if (rawData.value.hasOwnProperty(mappedStatus)) {
+                                    rawData.value[mappedStatus]++;
+                                }
+                            }
+                        });
+                    }
+                    
                     // 🌟 콘솔에 처리된 수강자 목록 예쁘게 출력
                     console.groupCollapsed('📊 처리된 수강자 목록 (클릭하여 자세히 보기)');
                     if (enrollList.value.length === 0) {
@@ -433,21 +550,135 @@
         } catch (e) {
             console.error('❌ 수강자 데이터 fetch 중 예외 발생:', e);
             enrollList.value = [];
+            totalPages.value = 1;
         } finally {
             isLoadingEnroll.value = false; // 로딩 종료
         }
     };
 
-    // ✅ 활성 탭 상태
-    const activeTab = ref('all')
+        // ✅ 결제 상태 업데이트 함수 (fetch API 사용) ---
+        const updatePaymentStatus = async (ids, payStatus) => {
+        if (!payStatus) {
+            toast.warning('변경할 결제 상태를 선택해주세요.');
+            return false;
+        }
 
-    // ✅ count 포함된 탭 목록 계산
-    const tabsWithCount = computed(() =>
-        tabList.map(tab => ({
-            ...tab,
-            count: rawData[tab.id] || 0
-        }))
-    )
+        if (ids.length === 0) {
+            toast.warning('변경할 수강생을 한 명 이상 선택해주세요.');
+            return false;
+        }
+
+        const payload = {
+            pay_status: payStatus,
+            ids: ids
+        };
+        console.log('결제 상태 업데이트 요청 페이로드:', payload);
+
+        try {
+            const response = await fetch('http://localhost:8000/api/admin/payments/posts-public', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '네트워크 응답이 좋지 않습니다.');
+            }
+            await fetchEnrollData();
+
+            toast.success('결제 상태가 성공적으로 업데이트되었습니다.');
+            return true;
+        } catch (error) {
+            console.error('결제 상태 업데이트 실패:', error);
+            toast.error(`결제 상태 업데이트 실패: ${error.message}`);
+            return false;
+        }
+    };
+
+    // --- 개별 드롭다운 변경 시 호출되는 함수 ---
+    const updateIndividualPaymentStatus = async (enrollId, newStatus) => {
+        // UI 즉시 업데이트를 위해 enrollList 직접 수정 (optimistic update)
+        const enrollIndex = enrollList.value.findIndex(enroll => enroll.id === enrollId);
+        if (enrollIndex === -1) return;
+
+        const oldStatus = enrollList.value[enrollIndex].paymentStatus;
+        enrollList.value[enrollIndex].paymentStatus = newStatus; // UI 먼저 변경
+
+        const success = await updatePaymentStatus([enrollId], newStatus);
+        if (!success) {
+            // API 호출 실패 시 UI 롤백
+            enrollList.value[enrollIndex].paymentStatus = oldStatus;
+        }
+    };
+
+    // --- 상단 업데이트 버튼 클릭 시 호출되는 함수 (일괄 변경) ---
+    const onUpdateApply = async () => {
+        const success = await updatePaymentStatus(selectedItems.value, selectedPayStatus.value);
+        if (success) {
+            // 성공 시 체크박스 선택 및 상단 드롭다운 초기화
+            selectedItems.value = [];
+            selectedPayStatus.value = '';
+        }
+    };
+
+
+
+
+    // ✅ 필터
+    const filterModalOpen = ref(false)
+
+    // 현재 선택 중인 필터 값
+    const filters = reactive({
+        year: '',
+        semester: '',
+        position: '',
+        course: ''
+    })
+
+    // 적용된 필터 값 (화면에 보여질 값)
+    const appliedFilters = reactive({})
+
+    // 모달 열기/닫기
+    const openFilterModal = () => {
+        filterModalOpen.value = true
+    }
+    const closeFilterModal = () => {
+        filterModalOpen.value = false
+    }
+
+    // 필터 적용
+    const applyFilters = () => {
+        Object.keys(filters).forEach((key) => {
+            if (filters[key] !== '' && filters[key] !== '선택') {
+                appliedFilters[key] = filters[key]
+            } else {
+                delete appliedFilters[key]
+            }
+        })
+        closeFilterModal();
+        fetchTrainings();
+    }
+
+    // 필터 취소 (filters 초기화)
+    const cancelFilters = () => {
+        Object.keys(filters).forEach((key) => {
+            filters[key] = ''
+        })
+        closeFilterModal();
+        fetchTrainings();
+    }
+
+    // ✕ 클릭 시 필터 삭제
+    const removeFilter = (key) => {
+        delete appliedFilters[key]
+        filters[key] = ''
+        fetchTrainings();
+    }
+
 
     // ✅ 삭제 모달 관련 ref 선언
     const isDeleteModalVisible = ref(false);
@@ -526,6 +757,10 @@
 
 
     const pageTitle = useState('pageTitle')
+
+    watch([activeTab, searchQuery, selectedYear, selectedSemester, selectedCourse, currentPage], () => {
+        fetchEnrollData();
+    });
     
     onMounted(() => {
         pageTitle.value = '수강자 입금관리'

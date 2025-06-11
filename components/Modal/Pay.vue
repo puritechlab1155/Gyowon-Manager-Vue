@@ -118,8 +118,8 @@
         <div class="p-4">
             <h2 class="paperlogy text-[26px] max-md:text-[22px] font-medium mt-5 mb-5">연수과정 검색</h2>
             <div class="flex items-end justify-end gap-2 mb-4">
-                <DropYear v-model="selectedYear" paddingY="py-1.5"/>
-                <DropSemester v-model="selectedSemester" paddingY="py-1.5"/>
+                <DropYear v-model="selectedYear" paddingY="py-1"/>
+                <DropSemester v-model="selectedSemester" paddingY="py-1"/>
                 <div class=" flex justify-end gap-2">
                     <div class="flex space-x-0">
                         <input type="text" placeholder="연수과정 검색" class="max-w-[180px] w-full px-2 g-[#FEFEFE] text-[#AFAFAF] placeholder-[#AFAFAF] border border-[#DBDEE3]
@@ -146,22 +146,34 @@
                         </tr>
                     </thead>
                     <tbody id="courseTableBody">
-                        <tr class="cursor-pointer hover:bg-blue-50" @click="selectCourse('2025-1-A03091541')">
-                            <td class="border border-gray-300 px-2 py-1 text-center">1</td>
-                            <td class="border border-gray-300 px-2 py-1">
-                                <div type="button"
-                                    class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1 max-sm:text-[14px] rounded-lg border border-[#2B5BBB]">
-                                    2025-1-A03091541
-                                </div>
-                            </td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">자율</td>
-                            <td class="border border-gray-300 px-2 py-1 ">필라테스초중급</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">서울디자인고</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">매주 목요일</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">0차</td>
-                        </tr>
+                        <template v-for="(course, index) in courseList" :key="course.id">
+                            <tr class="cursor-pointer hover:bg-blue-50" @click="selectCourse(course.course_code)">
+                                <td class="border border-gray-300 px-2 py-1 text-center">
+                                    {{ (currentPage - 1) * pagination.per_page + index + 1 }}
+                                </td>
+                                <td class="border border-gray-300 px-2 py-1">
+                                    <div type="button"
+                                        class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1 max-sm:text-[14px] rounded-lg border border-[#2B5BBB]">
+                                        {{ course.course_code }}
+                                    </div>
+                                </td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.job_name }}</td>
+                                <td class="border border-gray-300 px-2 py-1 ">{{ course.course_name }}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.course_place }}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.day_of_week }}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.round || '0차' }}</td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
+                <Pagenation
+                    :currentPage="currentPage"
+                    :totalPages="totalPages"
+                    @update:currentPage="page => {
+                        currentPage = page;
+                        fetchCourseList(); // ✅ 페이지 바뀔 때 데이터 다시 불러오기
+                    }"
+                />
             </div>
             <button @click="closeSlidePanel()" class="mt-4 bg-gray-200 px-4 py-2 rounded-md w-full">닫기</button>
         </div>
@@ -171,7 +183,10 @@
 <script setup>
     import { ref, watch } from 'vue';
     import { onClickOutside } from '@vueuse/core';
+    // import { useToast } from 'vue-toast-notification';
 
+    // const toast = useToast();
+    const token = useCookie('auth_token').value
     // `editData` prop을 정의합니다. 부모 컴포넌트로부터 수정할 데이터를 받습니다.
     const props = defineProps({
         visible: Boolean,
@@ -180,7 +195,6 @@
             default: () => ({})
         }
     });
-
     // 모달 내부에서 데이터를 수정할 경우를 대비해 `editData`를 반응형으로 복사합니다.
     // 이렇게 하면 부모에서 넘어온 prop을 직접 수정하지 않고,
     // 내부에서 수정된 데이터를 저장 시에만 부모로 전달할 수 있습니다.
@@ -207,7 +221,7 @@
 
     const modalRoot = ref(null);
 
-    // ✅ 이 watch 블록만 유지합니다. (props.visible 감시 및 onClickOutside)
+    // ✅ 외부 클릭시 닫기
     watch(() => props.visible, (newVal) => {
         if (newVal) {
             onClickOutside(modalRoot, () => {
@@ -218,6 +232,9 @@
         }
     }, { immediate: true });
 
+    const currentPage = ref(1); // 현재 페이지
+    const totalPages = ref(0); // 전체 페이지 수
+    const perPage = ref(15); // 페이지당 개수 (기본값)
 
 
     // ✅  검색 슬라이드 
@@ -233,20 +250,65 @@
         isSlidePanelOpen.value = false;
     };
 
-    // 검색 결과 테이블에서 과정을 선택했을 때 호출될 함수 (예시)
-    // 실제 데이터를 업데이트하는 로직은 여기에 추가해야 합니다.
     const selectCourse = (courseCode) => {
         // 예시: 선택된 courseCode를 localEditData에 반영하고 패널 닫기
         localEditData.value.courseCode = courseCode;
+        toast.success(`"${course.course_name}" 과정을 선택하셨습니다.`);
         closeSlidePanel();
-        // 필요하다면, 선택된 courseCode로 추가 정보를 불러오는 로직을 여기에 추가할 수 있습니다.
-        // 예를 들어, emit('courseSelected', courseCode);
     };
 
+    // ✅  년도, 학기 검색시 연수데이터 불러오기
     const selectedYear = ref('');
     const selectedSemester = ref('');
-
+    const courseList = ref([]) 
     
+    async function fetchCourseList() {
+        const year = selectedYear.value;
+        const semester = selectedSemester.value;
+
+        // '선택'이거나 빈 문자열일 경우 API 호출하지 않고 초기화
+        const isInvalid = !year || year === '선택' || !semester || semester === '선택'
+
+        if (isInvalid) {
+            courseList.value = [] // 표 비우기
+            console.log('년도 또는 학기가 선택되지 않아 과정 목록 API 호출을 생략합니다.')
+            return
+        }
+
+        const params = new URLSearchParams({
+            application_year: year,
+            semester: semester,
+            page: currentPage.value,
+        });
+
+        const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
+        console.log('과정명 API 호출 URL:', url);
+
+        try {
+            const response = await $fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            courseList.value = response?.data || []
+            console.log('📦 받아온 과정 리스트:', courseList.value)
+            perPage.value = response.per_page || 15;
+            totalPages.value = Math.ceil((response.total || 0) / perPage.value);
+
+        } catch (error) {
+            console.error('❌ 과정 목록 요청 에러:', error)
+            courseList.value = []
+            toast.error('과정 목록을 불러오지 못했습니다.')
+        }
+    }
+
+    watch([selectedYear, selectedSemester], () => {
+        currentPage.value = 1;
+        fetchCourseList()
+    }, { immediate: true })
+
+
+
 </script>
 
 <style scoped>
