@@ -25,7 +25,10 @@
 
                 <!-- 우측 버튼 -->
                 <div class="flex items-center gap-2 max-lg:flex-col">
-                    <DropStatus v-model="selectedStatus" height="45px" width="105px"/>
+                    <DropStatus v-model="selectedStatus" 
+                    height="45px" width="105px" 
+                    @click="handleDropdownClick"  
+                    @focus="handleDropdownClick"/>
                     <div class="flex justify-between gap-2">
                         <BtnEdit :to="`/Training/Edit/${data.id}`" />
                         <BtnDiscard @click="openDeleteModal(data)" />
@@ -162,15 +165,37 @@
         '접수마감': 0,
         '과정종료': null,
     };
+
+    let isUserInteracting = false; 
+
+    const handleDropdownClick = () => {
+        isUserInteracting = true;
+    };
+    
+    watch(() => props.openingText, (newText) => {
+        if (selectedStatus.value !== newText) {
+            selectedStatus.value = newText;
+        }
+    }, { immediate: true }); 
+
     watch(selectedStatus , (newStatus, oldStatus) => {
-        if (newStatus !== oldStatus) {
+        if (newStatus === oldStatus) {
+        return;
+    }
+
+        // 2. isUserInteracting 플래그를 확인하여 사용자 조작인지 판단합니다.
+        if (isUserInteracting) {
+            // 사용자 직접 조작에 의한 변경이므로, emit하고 토스트를 띄웁니다.
             emit(
                 'update-opening',
                 props.data.id,
                 statusToOpening[newStatus],
-                props.data.title // 강의명 추가
+                props.data.title, // 강의명
+                true // showToast를 true로 전달하여 알림을 띄웁니다.
             );
-        }
+            isUserInteracting = false; 
+            
+        } 
     });
 
     
@@ -193,32 +218,124 @@
         }
     }
 
-    // ✅ 연수내용
-    const parsedContent = computed(() => {
-        if (!props.data?.content) return '';
+    // // ✅ 연수내용
+    // const parsedContent = computed(() => {
+    //     if (!props.data?.content) return '';
 
-        return props.data.content
-        // 1. 역슬래시 이스케이프 복원
-        .replace(/\\r\\n/g, '\n')        // \r\n 복원
-        .replace(/\\n/g, '\n')          // \n 복원
-        .replace(/\\n/g, '') 
-        .replace(/\\"/g, '"')            // \" 복원
-        .replace(/\\'/g, "'")            // \' 복원
-        .replace(/\\\\/g, '\\')          // \\ 복원
-        .replace(/\*(.+?)\*/g, '<strong>$1</strong>') // *강조* → <strong>강조</strong> 변환
-        .replace(/\r?\n/g, '</p><p>') // 줄바꿈을 </p><p>로 변환
+    //     return props.data.content
+    //     // 1. 역슬래시 이스케이프 복원
+    //     .replace(/\\r\\n/g, '\n')        // \r\n 복원
+    //     .replace(/\\n/g, '\n')          // \n 복원
+    //     .replace(/\\n/g, '') 
+    //     .replace(/\\"/g, '"')            // \" 복원
+    //     .replace(/\\'/g, "'")            // \' 복원
+    //     .replace(/\\\\/g, '\\')          // \\ 복원
+    //     .replace(/\*(.+?)\*/g, '<strong>$1</strong>') // *강조* → <strong>강조</strong> 변환
+    //     .replace(/\r?\n/g, '</p><p>') // 줄바꿈을 </p><p>로 변환
 
-        // 2. font-size 스타일 제거
-        .replace(/font-size:\s*[^;"]+;?/gi, '')
+    //     // 2. font-size 스타일 제거
+    //     .replace(/font-size:\s*[^;"]+;?/gi, '')
 
 
-        .trim()
+    //     .trim()
 
-        // 3. 앞뒤에 <p> 추가 (열고 닫기)
-        .replace(/^/, '<p>')
-        .replace(/$/, '</p>');
+    //     // 3. 앞뒤에 <p> 추가 (열고 닫기)
+    //     .replace(/^/, '<p>')
+    //     .replace(/$/, '</p>');
 
-    });
+    // });
+
+
+// ✅ 연수내용 (기존 strong 태그 보존 + * 텍스트를 strong으로 변환)
+const parsedContent = computed(() => {
+    if (!props.data?.content) return '';
+
+    let contentString = props.data.content;
+
+    console.log('=== 원본 데이터 ===');
+    console.log(contentString);
+
+    // --- 1. **핵심:** `<br />` 태그 바로 뒤에 붙은 `\r\n` 또는 `\n` 제거 ---
+    // 이것이 과도한 줄 간격의 주범입니다. `\\r\\n` 형태로 문자열로 넘어온 경우를 포함합니다.
+    contentString = contentString.replace(/<br\s*\/?\s*>\\r\\n/g, '<br />'); // `<br/>\r\n` -> `<br/>`
+    contentString = contentString.replace(/<br\s*\/?\s*>\\n/g, '<br />');   // `<br/>\n` -> `<br/>`
+    contentString = contentString.replace(/<br\s*\/?\s*>\\\\r\\\\n/g, '<br />'); // `<br/>\\r\\n` -> `<br/>`
+    contentString = contentString.replace(/<br\s*\/?\s*>\\\\n/g, '<br />');   // `<br/>\\n` -> `<br/>`
+
+    // --- 2. 일반적인 이스케이프 문자 복원 (JSON.parse가 되지 않는 경우를 대비) ---
+    // `\"` -> `"`, `\'` -> `'`, `\\` -> `\`
+    contentString = contentString.replace(/\\"/g, '"');
+    contentString = contentString.replace(/\\'/g, "'");
+    contentString = contentString.replace(/\\\\/g, '\\'); 
+    
+    console.log('=== 1, 2단계 이스케이프 처리 후 ===');
+    console.log(contentString);
+
+    // --- 3. HTML 엔티티 디코딩 (기존 HTML 태그 보존) ---
+    // `&lt;strong&gt;` 같은 HTML 엔티티를 실제 태그로 변환합니다.
+    contentString = contentString
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' '); 
+
+    console.log('=== HTML 엔티티 디코딩 후 ===');
+    console.log(contentString);
+
+    // --- 4. **핵심:** * 사이의 텍스트를 <strong> 태그로 변환 (중복 방지 강화) ---
+    // 이 정규식은 `*`로 시작하고 `*`로 끝나는 패턴을 찾되,
+    // - 이미 `<strong>` 태그 내부에 있는 `*`는 건드리지 않습니다.
+    // - `<`나 `>` HTML 태그 경계를 넘지 않습니다.
+    // - `*` 사이에 빈 문자열이 아닌 텍스트가 있어야 합니다.
+    // - `*` 문자가 3개 이상 연속되는 `***` 같은 패턴도 `<strong>`으로 감싸지 않도록 예외 처리합니다.
+    // 이 로직은 HTML 태그 밖에 있는 순수 텍스트의 *강조*만 정확히 잡아서 변환합니다.
+    contentString = contentString.replace(
+        /(?<!<strong>)\*(?![*])((?:(?!!<)|(?!!>).)*?)(?<![*])\*(?!<\/strong>)/g, 
+        '<strong>$1</strong>'
+    );
+    // 설명:
+    // (?<!<strong>) : <strong> 태그 바로 뒤에 오는 *는 제외
+    // \* : 리터럴 *
+    // (?![*])      : * 문자가 2개 이상 연속되지 않는 경우 (*** 형태 방지)
+    // ((?:(?!!<)|(?!!>).)*?) : <, > 문자를 포함하지 않는 어떤 문자든지, 비탐욕적 매칭
+    // (?<![*])     : 텍스트의 끝이 *가 아닌 경우 (*** 형태 방지)
+    // \* : 리터럴 *
+    // (?!<\/strong>): </strong> 태그 바로 앞에 오는 *는 제외
+
+    // 그래도 변환되지 않는 `*`가 있다면 (예: `* 전국 유·초·중등 교원 및 교육전문직 대상`)
+    // 이 정규식은 `*`와 텍스트 사이에 공백이 있는 경우도 처리합니다.
+    // 기존 HTML 태그를 손상시키지 않기 위해 <나 >가 없는 텍스트만 매칭합니다.
+    contentString = contentString.replace(/\*([^<>\n]+?)\*/g, '<strong>$1</strong>');
+
+
+    // `***` 같은 패턴 때문에 `<strong><strong>*</strong>` 이렇게 중첩되는 경우가 발생했다면,
+    // 이중 <strong>을 단일 <strong>으로 정화하는 로직 추가 (필요 시)
+    // contentString = contentString.replace(/<strong>\s*<strong>(.*?)<\/strong>\s*<\/strong>/g, '<strong>$1</strong>');
+    // contentString = contentString.replace(/<strong>\s*\*(.*?)\*\s*<\/strong>/g, '<strong>$1</strong>'); // ** 댄스화 부분 처리
+
+    console.log('=== * 변환 후 ===');
+    console.log(contentString);
+
+    // --- 5. 최종적인 실제 줄바꿈 문자 (`\r\n` 또는 `\n`)를 <br /> 태그로 변환 ---
+    // 위에서 이미 <br> 태그 뒤에 오는 \r\n은 제거했으므로, 여기서는 다른 의미 있는 줄바꿈만 변환합니다.
+    contentString = contentString.replace(/\r?\n/g, '<br />');
+
+    // --- 6. 중복된 <br> 태그 정리 및 불필요한 줄 간격 줄이기 ---
+    // 3개 이상의 <br />이 연속되는 경우를 2개로 줄여서 적절한 줄 간격 유지
+    contentString = contentString.replace(/(<br\s*\/?>\s*){3,}/gi, '<br /><br />');
+
+    // --- 7. font-size 스타일 제거 (원치 않으면 이 줄 제거) ---
+    contentString = contentString.replace(/font-size:\s*[^;"]+;?/gi, '');
+    
+    console.log('=== 최종 처리된 데이터 ===');
+    console.log(contentString);
+    console.log('strong 태그 개수:', (contentString.match(/<strong>/g) || []).length);
+
+    return contentString.trim();
+});
+
 
     // ✅ 토글버튼
     const showDetails = ref(false)
@@ -276,7 +393,7 @@
 
             emit('deleted', selectedTrainingItem.value.id)
             isDeleteModalVisible.value = false
-            toast.success('연수가 성공적으로 삭제되었습니다.')
+            toast.success('${selectedTrainingItem.value.name}연수가 성공적으로 삭제되었습니다.')
 
         } catch (error) {
             toast.error(`삭제 중 오류가 발생했습니다: ${error.message}`)
@@ -294,6 +411,9 @@
         .info-list{
             display: flex;
             align-items: center;
+        }
+        strong {
+            font-weight: 600 !important;
         }
         @media (max-width: 1204px) {
             .title-box {

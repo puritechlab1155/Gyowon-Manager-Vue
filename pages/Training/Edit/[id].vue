@@ -339,8 +339,48 @@
                 },
                 // transform을 사용하여 데이터를 폼 필드에 맞게 가공합니다.
                 transform: (response) => {
-                    console.log('Fetched training data:', response.data); // API 응답 확인
+                    console.log('1. API 응답 raw 데이터 :', response.data); // API 응답 확인
                     const course = response.data; // API 응답 구조에 따라 조정
+
+                    const rawContent = course.content || '';
+                    console.log('2. content 원본 문자열:', rawContent); 
+
+                    let tempContent = rawContent;
+                    try {
+                        // rawContent가 JSON 문자열로 감싸져 있지 않다면 직접 감싸줍니다.
+                        if (!rawContent.startsWith('"') || !rawContent.endsWith('"')) {
+                            tempContent = `"${rawContent.replace(/"/g, '\\"')}"`;
+                        }
+                        tempContent = JSON.parse(tempContent);
+                    } catch (e) {
+                            console.warn("JSON.parse failed for content, using raw content directly:", e);
+                            tempContent = rawContent; // 파싱 실패 시 원본 그대로 사용
+                    }
+
+                    // 2. 실제 \r\n 또는 \n 제어 문자를 HTML <br /> 태그로 변환
+                    let finalContent = tempContent.replace(/\r?\n/g, '<br />'); 
+                        
+                    // 3. HTML 엔티티로 변환된 문자열 복원 (이미 HTML로 넘어오는 경우가 많으므로 안전장치)
+                    finalContent = finalContent
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'")
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>');
+
+                    // 4. font-size 스타일 제거 (유지)
+                    finalContent = finalContent.replace(/font-size:\s*[^;"]+;?/gi, '').trim();
+                    finalContent = finalContent.replace(/(<br\s*\/?>\s*){2,}/gi, '<br />');
+                    // 5. 내용이 비어있거나 HTML 태그가 없는 순수 텍스트인 경우 <p></p>로 감싸기
+                    if (!finalContent) {
+                        finalContent = '<p></p>';
+                    } else if (!/<[a-z][\s\S]*>/i.test(finalContent)) {
+                        finalContent = `<p>${finalContent}</p>`;
+                    }
+                    console.log('3. content 전처리 후 문자열 (HTML):', finalContent)
+                    const eduPlaceValue = course.course_place && course.course_place.length > 0 
+                                      ? course.course_place // API에서 배열로 오면 배열 그대로
+                                      : []; // 없으면 빈 배열로 할당 (문자열 '선택하세요' 대신)
                     return {
                         id: course.id,
                         course_code: course.course_code || '',
@@ -363,8 +403,8 @@
                         round: course.time || '선택하세요',
                         semester: course.semester || '선택하세요',
                         day: course.day_of_week || '선택하세요',
-                        eduPlace: course.course_place && course.course_place.length > 0 ? course.course_place[0] : '선택하세요', // 첫번째 장소만 사용
-                        content: course.content || '',
+                        eduPlace: eduPlaceValue,
+                        content: finalContent, 
                     };
                 }
             });

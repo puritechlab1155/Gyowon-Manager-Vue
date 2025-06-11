@@ -354,6 +354,10 @@
             toast.error('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
             return;
         }
+        if (postEnd.value && postEnd.value < registDate.value) {
+            toast.error('접수마감일은 등록일 이후여야 합니다.');
+            return;
+        }
 
         // API 요청을 위한 데이터(페이로드) 준비
         const payload = {
@@ -438,12 +442,10 @@
     }
 
 
-    
     // ✅ 페이지 타이틀 설정
     const pageTitle = useState('pageTitle')
-        onMounted(async () => {
-            pageTitle.value = '연수등록'
-    })
+    pageTitle.value = '연수수정'
+
 </script>
 
 <style scoped> 

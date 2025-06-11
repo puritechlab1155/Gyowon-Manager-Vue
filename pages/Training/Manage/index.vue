@@ -3,7 +3,8 @@
         <div class="top w-full flex items-center justify-between max-lg:mt-[15px]  max-2xl:flex-col max-2xl:items-start max-2xl:gap-2 max-lg:flex-col-reverse">
             <!-- left-content -->
             <TrainingTab :tabs="tabs" 
-                        v-model:selectedTab="activeTab" />
+                        :selectedTab="activeTab"
+                        @update:selectedTab="changeTab"/>
             <div v-if="activeTab === 'academy'"></div>
             <div v-else-if="activeTab === 'research'"></div>
             <div id="selectedFilters" class="flex flex-wrap justify-start gap-2 mt-2 block lg:hidden">
@@ -136,6 +137,12 @@
     import { useToast } from 'vue-toastification'  
 
     const toast = useToast()
+
+    const trainingList = ref([]);
+    const searchQuery = ref('');
+    const selectedItems = ref([]);
+    const isLoading = ref(false); 
+
     const selectedYear = ref('');
     const selectedSemester = ref('');
     const selectedPosition = ref('');
@@ -149,11 +156,6 @@
 
     const courseOptions = ref([])
 
-    const trainingList = ref([]);
-    const searchQuery = ref('');
-    const selectedItems = ref([]);
-    const isLoading = ref(false); 
-
     const currentPage = ref(1);
     const totalPages = ref(1);
     const perPage = 15; 
@@ -163,7 +165,13 @@
         { id: 'academy', label: '연수원' },
         { id: 'research', label: '연구회' }
     ]
-
+    function changeTab(tabId) {
+        console.log('changeTab 호출됨, 클릭된 tabId:', tabId);
+        if (activeTab.value !== tabId) { 
+            activeTab.value = tabId;
+            console.log('탭 변경됨:', activeTab.value);
+        }
+    }
     const jobMap = {
         '서울': '서울직무',
         '경기': '경기직무',
@@ -173,6 +181,36 @@
     function onSearch(query) {
         searchQuery.value = query; // 상태만 바꾸기
     }
+
+
+    // ✅ 체크박스 그룹 관리
+    const filteredTrainingList = computed(() => trainingList.value)
+
+    const {
+        selectedItems: selectedTrainingItems,
+        isAllSelected,
+        toggleItem: toggleTrainingItem,
+        toggleSelectAll,
+    } = useCheckboxGroup(filteredTrainingList)
+
+    const toggleItem = (id, checked) => {
+        if (checked) {
+            selectedItems.value.push(id)
+        } else {
+            selectedItems.value = selectedItems.value.filter(n => n !== id)
+        }
+    }
+
+    // 선택된 아이템들 확인 (디버깅용)
+    watch(selectedTrainingItems, (newVal) => {
+        console.log('선택된 아이템들:', newVal)
+    }, { deep: true })
+
+    watch(isAllSelected, (newVal) => {
+        console.log('전체선택 상태:', newVal)
+    })
+
+
 
     // ✅ 필터
     const filterModalOpen = ref(false)
@@ -242,7 +280,6 @@
         if (invalid) {
             courseOptions.value = ['선택'];
             selectedCourse.value = '선택';
-            await fetchTrainings(); 
             return;
         }
         
@@ -259,28 +296,27 @@
         const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
         console.log('API 호출 URL:', url);
 
-        const { data, error } = await useFetch(url, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-        transform: (res) => {
-            const rawCourses = res?.data || [];
+        try {
+            const responseData = await $fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            
+            const rawCourses = responseData?.data || []; 
             const courseNames = rawCourses.map(item => item.course_name);
             console.log('불러온 과정명:', courseNames);
-            return ['선택', ...courseNames];
-        }
-        });
+            
+            courseOptions.value = ['선택', ...courseNames];
 
-        if (error.value) {
-            console.error('❌ 과정명 요청 에러 발생:', error.value);
-            courseOptions.value = ['선택'];
-            selectedCourse.value = '';
-            } else {
-            courseOptions.value = data.value;
             // 선택된 course가 유효한지 확인
             if (!courseOptions.value.includes(selectedCourse.value)) {
-                selectedCourse.value = '';
+                selectedCourse.value = '선택';
             }
+        } catch (error) {
+            console.error('❌ 과정명 요청 에러 발생:', error);
+            courseOptions.value = ['선택'];
+            selectedCourse.value = '선택'; 
         }
     }
 
@@ -292,6 +328,8 @@
     // ✅ 연수과정 불러오기
     async function fetchTrainings() {
         isLoading.value = true;
+        selectedTrainingItems.value = []; 
+        
         try {
             const query = searchQuery.value.trim();
             const tab = activeTab.value === 'academy' ? '연수원' : '연구회';
@@ -326,19 +364,21 @@
 
             const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
             
-            const { data, error } = await useFetch(url, {
+            const responseData = await $fetch(url, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
-            const meta = data.value.meta;
+            const meta = responseData.meta; // responseData.meta에 직접 접근
+            const courses = responseData.data || []; 
+
             if (meta && meta.last_page) {
                 totalPages.value = meta.last_page;
             } else {
                 totalPages.value = 1;
             }
-            trainingList.value = data.value.data.map(course => ({
+            trainingList.value = courses.map(course => ({ 
                 id: course.id,                                   // course 고유 ID  768
                 userId: course.user_id,                          // user_id 1
                 order: course.order,                             // order   null
@@ -397,7 +437,7 @@
         () => {
             currentPage.value = 1;
             fetchTrainings();
-            console.log('탭 변경:');
+            console.log('Watch 트리거됨: fetchTrainings 호출됨');
         },
         { immediate: true }
     );
@@ -442,32 +482,6 @@
     });
 
 
-    // ✅ 체크박스 그룹 관리
-    const filteredTrainingList = computed(() => trainingList.value)
-
-    const {
-        selectedItems: selectedTrainingItems,
-        isAllSelected,
-        toggleItem: toggleTrainingItem,
-        toggleSelectAll,
-    } = useCheckboxGroup(filteredTrainingList)
-
-    const toggleItem = (id, checked) => {
-        if (checked) {
-            selectedItems.value.push(id)
-        } else {
-            selectedItems.value = selectedItems.value.filter(n => n !== id)
-        }
-    }
-
-    // 선택된 아이템들 확인 (디버깅용)
-    watch(selectedTrainingItems, (newVal) => {
-        console.log('선택된 아이템들:', newVal)
-    }, { deep: true })
-
-    watch(isAllSelected, (newVal) => {
-        console.log('전체선택 상태:', newVal)
-    })
 
     // ✅ 삭제기능
     const handleDeleted = (deletedId) => {
@@ -510,6 +524,7 @@
             const result = await response.json();
             console.log('서버 응답:', result);
             toast.success(`${selectedIds.length}개의 강의가 "${selectedStatus.value}" 상태로 적용되었습니다.`)
+            await fetchTrainings();
             
         } catch (error) {
             console.error('fetch 에러:', error);
