@@ -20,7 +20,7 @@
                     <component :is="getJobBadge(data.job)" />
                     </div>
                 </div>
-                <span class="text-base text-[#A1A1A1] mt-1">{{ data.date }} ｜ {{ data.time }}</span>
+                <span class="text-base text-[#A1A1A1] mt-1">등록: {{ data.date }} ｜ 마감: {{ data.postEnd }}</span>
                 </div>
 
                 <!-- 우측 버튼 -->
@@ -128,7 +128,7 @@
         trainingList: Array,
         openingText: String 
     })
-    const emit = defineEmits(['deleted'])
+
     const isChecked = computed(() => {
         return props.data?.id && props.selectedItems.includes(props.data.id)
     })
@@ -137,7 +137,7 @@
         props.toggleItem(props.data.id, checked)
     }
 
-    // // ✅ 날짜수정
+    // ✅ 날짜수정
     function formatShortDate(dateStr) {
         if (!dateStr) return ''
         const d = new Date(dateStr)
@@ -154,8 +154,26 @@
         return `${start} ~ <br class='mob-br'> ${end}`
     })
 
+    // ✅ 상태변경
+    const emit = defineEmits(['deleted', 'update-opening'])
     const selectedStatus = ref(props.openingText)
+    const statusToOpening = {
+        '접수중': 1,
+        '접수마감': 0,
+        '과정종료': null,
+    };
+    watch(selectedStatus , (newStatus, oldStatus) => {
+        if (newStatus !== oldStatus) {
+            emit(
+                'update-opening',
+                props.data.id,
+                statusToOpening[newStatus],
+                props.data.title // 강의명 추가
+            );
+        }
+    });
 
+    
     const getSubjectBadge = (subject) => {
             switch (subject) {
             case '댄스스포츠': return BandDance

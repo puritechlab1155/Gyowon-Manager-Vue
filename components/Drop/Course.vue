@@ -72,13 +72,15 @@
     }
 
     const selectOption = (option) => {
-        emit('update:modelValue', option)
-        isOpen.value = false
-    }
+        emit('update:modelValue', option); // 빈 문자열로 치환 ❌
+        isOpen.value = false;
+    };
 
     const selectedLabel = computed(() => {
-        return props.modelValue !== '' ? props.modelValue : '과정명'
-    })
+        return props.modelValue && props.modelValue !== '선택'
+            ? props.modelValue
+            : '과정명';
+    });
 
     const emit = defineEmits(['update:modelValue'])
 

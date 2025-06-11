@@ -15,11 +15,10 @@ defineProps({
     .mob-br {
         display: none;
     }
-    @media (max-width: 1280px) {
-        .after-small {
-            font-size: 18px;
-        }
+    .after-small {
+        font-size: 18px;
     }
+
     @media (max-width: 768px) {
         .mob-br {
             display: block;

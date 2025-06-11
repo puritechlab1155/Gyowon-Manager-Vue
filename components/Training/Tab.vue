@@ -21,8 +21,6 @@
 const props = defineProps({
     tabs: {
         type: Array,
-        required: true,
-        default: () => [],
     },
     selectedTab: {
         type: [String, Number],

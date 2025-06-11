@@ -70,11 +70,19 @@
     const toggleDropdown = () => {
         isOpen.value = !isOpen.value
     }
+    const selectedStatus = computed({
+        get() {
+            return props.modelValue;
+        },
+        set(value) {
+            emit('update:modelValue', value);
+        }
+    });
 
     const selectOption = (option) => {
-        emit('update:modelValue', option)
-        isOpen.value = false
-    }
+        selectedStatus.value = option;  // set 호출되어 부모에 전달됨
+        isOpen.value = false;
+    };
 
     const selectedLabel = computed(() => {
         return props.modelValue !== '' ? props.modelValue : '과정상태'

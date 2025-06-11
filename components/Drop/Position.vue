@@ -62,9 +62,14 @@
     }
 
     const selectOption = (option) => {
-        emit('update:modelValue', option)
-        isOpen.value = false
-    }
+        // '선택'을 누르면 빈 문자열로 처리하여 emit
+        if (option === '선택') {
+            emit('update:modelValue', '');
+        } else {
+            emit('update:modelValue', option);
+        }
+        isOpen.value = false;
+    };
 
     const selectedLabel = computed(() => {
         return props.modelValue !== '' ? props.modelValue : '직무'

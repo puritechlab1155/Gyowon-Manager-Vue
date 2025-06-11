@@ -3,8 +3,7 @@
         <div class="top w-full flex items-center justify-between max-lg:mt-[15px]  max-2xl:flex-col max-2xl:items-start max-2xl:gap-2 max-lg:flex-col-reverse">
             <!-- left-content -->
             <TrainingTab :tabs="tabs" 
-                        :selectedTab="activeTab" 
-                        @update:selectedTab="val => activeTab = val" />
+                        v-model:selectedTab="activeTab" />
             <div v-if="activeTab === 'academy'"></div>
             <div v-else-if="activeTab === 'research'"></div>
             <div id="selectedFilters" class="flex flex-wrap justify-start gap-2 mt-2 block lg:hidden">
@@ -65,17 +64,17 @@
     <p class="mt-4 text-gray-700">선택된 교육장소: {{ selectedEduPlace }}</p> -->
     <div class="list-wrap w-full flex flex-col gap-10 overflow-x-auto">
         <TrainingCard
-            v-for="item in filteredTrainingList"
+            v-for="item in trainingList"
             :key="item.id"
             :data="item"
             :selectedItems="selectedTrainingItems"
             :toggleItem="toggleTrainingItem"
             @deleted="handleDeleted"  
             :opening-text="item.openingText" 
+            @update-opening="updateOpeningStatus"
         />
     </div>
-    <p>현재 페이지: {{ currentPage }}</p>
-    <p>총 페이지: {{ totalPages }}</p>
+
     <Pagenation
         :currentPage="currentPage"
         :totalPages="totalPages"
@@ -137,61 +136,6 @@
     import { useToast } from 'vue-toastification'  
 
     const toast = useToast()
-
-    // const trainingList = ref([
-    // {
-    //     title: '모던 초중급',
-    //     job: '자율',
-    //     subject: '댄스스포츠',
-    //     date: '25.04.01',
-    //     time: '12:12:03',
-    //     semester: '2025-1학기',
-    //     startDate: '2025-04-09',
-    //     endDate: '2025-07-14',  
-    //     day: '수요일',
-    //     round: '0차',
-    //     points: 0,
-    //     hours: 30,
-    //     location: '서울디자인고, 컨실초',
-    //     number: '경기-교육-2025-216',
-    //     fee: 140000,
-    //     support: 0,
-    //     contents: '자율 웰빙초중급 (지터벅, 블루스에 관심 있는 사람은 누구나)
-    //                장소: 서울디자인고 4층 체육관
-    //                시간: 2025.2.1(토) 개강 / 10 ~ 12시
-    //                지터벅, 블루스
-    //               준비물: 댄스화, 개인음료, 편한 복장
-    //                ※ 댄스화 구매를 원하실 경우, 연수 시작 전 미리 주문해 주세요.
-    //                ※ 문의: 010-6661-9191'
-    // },
-    // {
-    //     title: '라인댄스 초급',
-    //     job: '서울',
-    //     subject: '라인댄스',
-    //     date: '25.03.15',
-    //     time: '10:00:00',
-    //     semester: '2025-1학기',
-    //     startDate: '2025-09-09',
-    //     endDate: '2025-10-14',  
-    //     day: '화요일',
-    //     round: '1차',
-    //     points: 1,
-    //     hours: 20,
-    //     location: '서울여상고',
-    //     number: '서울-교육-2025-123',
-    //     fee: 100000,
-    //     support: 50000,
-    //     contents: '자율 웰빙초중급 (지터벅, 블루스에 관심 있는 사람은 누구나)
-    //                장소: 서울디자인고 4층 체육관
-    //                시간: 2025.2.1(토) 개강 / 10 ~ 12시
-    //                지터벅, 블루스
-    //                준비물: 댄스화, 개인음료, 편한 복장
-    //                ※ 댄스화 구매를 원하실 경우, 연수 시작 전 미리 주문해 주세요.
-    //                ※ 문의: 010-6661-9191'
-    // },
-    // // ... 더 추가 가능
-    // ])
-
     const selectedYear = ref('');
     const selectedSemester = ref('');
     const selectedPosition = ref('');
@@ -202,9 +146,9 @@
             '접수마감': 0,
             '과정종료': null,
         }
+
     const courseOptions = ref([])
 
-    const activeTab = ref('academy');
     const trainingList = ref([]);
     const searchQuery = ref('');
     const selectedItems = ref([]);
@@ -214,6 +158,21 @@
     const totalPages = ref(1);
     const perPage = 15; 
 
+    const activeTab = ref('academy');
+    const tabs = [
+        { id: 'academy', label: '연수원' },
+        { id: 'research', label: '연구회' }
+    ]
+
+    const jobMap = {
+        '서울': '서울직무',
+        '경기': '경기직무',
+        '자율': '자율',
+    };
+
+    function onSearch(query) {
+        searchQuery.value = query; // 상태만 바꾸기
+    }
 
     // ✅ 필터
     const filterModalOpen = ref(false)
@@ -267,11 +226,6 @@
     }
 
 
-    const tabs = [
-        { id: 'academy', label: '연수원' },
-        { id: 'research', label: '연구회' }
-    ]
-
     const token = useCookie('auth_token').value;
 
     // ✅ 과정명 불러오기
@@ -288,68 +242,52 @@
         if (invalid) {
             courseOptions.value = ['선택'];
             selectedCourse.value = '선택';
-            await fetchTrainings(); // ⬅ 여기 추가
+            await fetchTrainings(); 
             return;
         }
-
+        
+        const jobValue = jobMap[position] || position;
         const rangeLabel = tabs.find(t => t.id === tab)?.label || '';
 
         const params = new URLSearchParams({
             range: rangeLabel,    
             application_year: year,
             semester: semester,
-            job_classification: position,
+            job_classification: jobValue, 
         });
 
         const url = `http://localhost:8000/api/admin/courses?${params.toString()}`;
         console.log('API 호출 URL:', url);
 
-        try {
-            const { data, error } = await useFetch(url, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                transform: (res) => {
-                console.log('API raw response:', res);
-                // res가 response body라면
-                const courseNames = (res.data || []).map(item => item.course_name);
-                return ['선택', ...courseNames]
-                }
-
-            });
-
-            if (error.value) {
-                console.error('과정명 리스트 조회 실패:', error.value);
-                courseOptions.value = ['선택']; // Add '선택' option even on error
-                selectedCourse.value = '선택';
-            }
-            else {
-            // 이전에 'const courseOptions.value = data.value;' 였던 부분을 수정
-            courseOptions.value = data.value; // 'courseOptions.value'는 이미 ref로 선언됨
-            
-            const currentSelectedCourse = selectedCourse.value;
-            // 현재 선택된 과정명이 새로운 목록에 없거나 '선택'이면 초기화
-            if (!currentSelectedCourse || currentSelectedCourse === '선택' || !courseOptions.value.includes(currentSelectedCourse)) {
-                selectedCourse.value = '선택';
-            }
+        const { data, error } = await useFetch(url, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        transform: (res) => {
+            const rawCourses = res?.data || [];
+            const courseNames = rawCourses.map(item => item.course_name);
+            console.log('불러온 과정명:', courseNames);
+            return ['선택', ...courseNames];
         }
+        });
 
-            console.log('과정명 리스트:', courseOptions.value);
-            await fetchTrainings(); // ⬅ 여기 추가
-
-        } catch (e) {
-            console.error('fetchCourseNames 에러:', e);
-            courseOptions.value = ['선택']; // Add '선택' option on catch error
-            selectedCourse.value = '선택';
+        if (error.value) {
+            console.error('❌ 과정명 요청 에러 발생:', error.value);
+            courseOptions.value = ['선택'];
+            selectedCourse.value = '';
+            } else {
+            courseOptions.value = data.value;
+            // 선택된 course가 유효한지 확인
+            if (!courseOptions.value.includes(selectedCourse.value)) {
+                selectedCourse.value = '';
+            }
         }
     }
 
-    const jobMap = {
-        '서울': '서울직무',
-        '경기': '경기직무',
-        '자율': '자율',
-    };
-
+    // 년도, 학기, 직무 선택하면 fetchTrainings 호출
+    watch([selectedYear, selectedSemester, selectedPosition], () => {
+        fetchCourseNames();
+    });
 
     // ✅ 연수과정 불러오기
     async function fetchTrainings() {
@@ -392,88 +330,83 @@
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                transform: (response) => {
-                    console.log('meta:', response.meta);
-                    if (response.meta && response.meta.last_page) {
-                            totalPages.value = response.meta.last_page;
-                        } else {
-                            totalPages.value = 1; // 기본값
-                        }
-                    console.log('totalPages.value set to:', totalPages.value);
-                    // 실제 강의 배열은 response.data에 있음
-                    const courses = response.data;
-
-                    return courses.map(course => ({
-                        id: course.id,                                   // course 고유 ID  768
-                        userId: course.user_id,                          // user_id 1
-                        order: course.order,                             // order   null
-                        opening: course.opening || '-',
-                        openingText: String(course.opening) === "1" ? "접수중"
-                        : String(course.opening) === "0" ? "접수마감"
-                        : "과정종료",             // opening  "1"
-                        job: course.job_classification 
-                        ? course.job_classification.replace('직무', '').trim() 
-                        : '-',                                           // job_classification "서울직무"
-                        title: course.course_name || '-',                // course_name "행복교육을위한웰빙댄스초중급"
-                        difficult: course.difficult_level || '-',        // difficult_level ""
-                        number: course.course_code || '-',               // course_code "WZfC108"
-                        range: course.range || '-',                      // range (연구회/연수원) 
-                        subject: course.division || '-',                 // division "웰빙댄스"
-                        status: course.status || '-',                    // status "직무"
-                        semester: course.semester || '-',                // semester "동계"
-                        round: course.time || '0차',                      // time  "" 
-                        time: course.created_at                          // created_at "2015-01-12T00:00:00.000000Z"
-                            ? new Date(course.created_at).toTimeString().substring(0, 8) 
-                            : '00:00:00',  // HH:mm:ss 형식
-                        date: course.created_at
-                            ? course.created_at.substring(2, 10).replace(/-/g, '.') 
-                            : '-',                                           // YY.MM.DD    
-                        hours: course.hour || 0,                          // hour "15"
-                        points: course.grade || 0,                        // grade "1"
-                        fee: course.tuition || 0,                         // tuition "85,000"
-                        support: course.application_fee || 0,             // application_fee "0"
-                        day: course.day_of_week || '-',                    // day_of_week "해당없음"
-                        startDate: course.course_start || '-',             // course_start "2015-01-12"
-                        endDate: course.course_end || '-',                 // course_end "2015-01-12"
-                        postEndDate: course.course_post_end || '-',        // course_post_end "2015-01-12"
-                        year: course.application_year || '-',              // application_year "2015",
-                        content: course.content || '-',                    // content "◈ 장소: 연촌초/명원초/디자인고\\r\\n◈ 과정명: 행복교육을위한 웰빙댄스초중급   \\r\\n◈ 종목: 지터벅,  블루스\\r\\n◈ 시간: 18:00~20:50(1일5시간/토,월~금 총6일) \\r\\n◈ 준비물: 개인컵, 수건, 댄스화, 편한 의상\\r\\n◈ 대상: 웰빙초급+웰빙초중급 이수자\\r\\n◈ 수강료: 85,000원"
-                        location: course.course_place                      // course_place "서울디자인고, 연촌초, 명원초"
-                            ? course.course_place.join(' | ') 
-                            : '',            
-                        createdAt: course.created_at || '-',                // created_at
-                        updatedAt: course.updated_at || '-',                // updated_at     
-                    }));
-                }
             });
 
-        if (error.value) {
-            console.error('Failed to fetch trainings:', error.value);
+            const meta = data.value.meta;
+            if (meta && meta.last_page) {
+                totalPages.value = meta.last_page;
+            } else {
+                totalPages.value = 1;
+            }
+            trainingList.value = data.value.data.map(course => ({
+                id: course.id,                                   // course 고유 ID  768
+                userId: course.user_id,                          // user_id 1
+                order: course.order,                             // order   null
+                opening: course.opening || '-',
+                openingText: String(course.opening) === "1" ? "접수중"
+                : String(course.opening) === "0" ? "접수마감"
+                : "과정종료",             // opening  "1"
+                job: course.job_classification 
+                ? course.job_classification.replace('직무', '').trim() 
+                : '-',                                           // job_classification "서울직무"
+                title: course.course_name || '-',                // course_name "행복교육을위한웰빙댄스초중급"
+                difficult: course.difficult_level || '-',        // difficult_level ""
+                number: course.course_code || '-',               // course_code "WZfC108"
+                range: course.range || '-',                      // range (연구회/연수원) 
+                subject: course.division || '-',                 // division "웰빙댄스"
+                status: course.status || '-',                    // status "직무"
+                semester: course.semester || '-',                // semester "동계"
+                round: course.time || '0차',                      // time  "" 
+                time: course.created_at                          // created_at "2015-01-12T00:00:00.000000Z"
+                    ? new Date(course.created_at).toTimeString().substring(0, 8) 
+                    : '00:00:00',  // HH:mm:ss 형식
+                date: course.created_at
+                    ? course.created_at.substring(2, 10).replace(/-/g, '.') 
+                    : '-',                                        // YY.MM.DD    
+                hours: course.hour || 0,                          // hour "15"
+                points: course.grade || 0,                        // grade "1"
+                fee: course.tuition || 0,                         // tuition "85,000"
+                support: course.application_fee || 0,             // application_fee "0"
+                day: course.day_of_week || '-',                    // day_of_week "해당없음"
+                startDate: course.course_start || '-',             // course_start "2015-01-12"
+                endDate: course.course_end || '-',                 // course_end "2015-01-12"
+                postEndDate: course.course_post_end || '-',        // course_post_end "2015-01-12"
+                year: course.application_year || '-',              // application_year "2015",
+                content: course.content || '-',                    // content "◈ 장소: 연촌초/명원초/디자인고\\r\\n◈ 과정명: 행복교육을위한 웰빙댄스초중급   \\r\\n◈ 종목: 지터벅,  블루스\\r\\n◈ 시간: 18:00~20:50(1일5시간/토,월~금 총6일) \\r\\n◈ 준비물: 개인컵, 수건, 댄스화, 편한 의상\\r\\n◈ 대상: 웰빙초급+웰빙초중급 이수자\\r\\n◈ 수강료: 85,000원"
+                location: course.course_place                      // course_place "서울디자인고, 연촌초, 명원초"
+                    ? course.course_place.join(' | ') 
+                    : '',            
+                createdAt: course.created_at || '-',                // created_at
+                updatedAt: course.updated_at || '-',                // updated_at
+                postEnd: course.course_post_end 
+                ? course.course_post_end.substring(2, 10).replace(/-/g, '.') 
+                : '-', // course_post_end     
+            }));
+
+        } catch (error) {
+            console.error('fetchTrainings 에러:', error);
             trainingList.value = [];
-            return;
+            totalPages.value = 1;
+        } finally {
+            isLoading.value = false;
         }
-
-        if (!data || !data.value) {
-            console.error('data가 비어있습니다:', data);
-            trainingList.value = [];
-            return;
-        }
-
-        trainingList.value = data.value;
-
-        } catch (e) {
-            console.error('fetchTrainings 에러:', e);
-            trainingList.value = [];
-        }finally {
-        isLoading.value = false;
-    }
-}
-    function onSearch(query) {
-        searchQuery.value = query; // 상태만 바꾸기
     }
 
+    watch(
+        [activeTab, selectedYear, selectedSemester, selectedPosition, selectedCourse, selectedStatus, searchQuery],
+        () => {
+            currentPage.value = 1;
+            fetchTrainings();
+            console.log('탭 변경:');
+        },
+        { immediate: true }
+    );
 
 
+    // 페이지네이션만 바뀔 경우: fetch만
+    watch(currentPage, () => {
+        fetchTrainings();
+    });
 
     // filters -> 드롭다운
     watch(() => filters.year, (val) => {
@@ -506,44 +439,12 @@
             }
         });
 
-        // fetchCourseNames는 year, semester, position 변경 시에만 호출
-        // fetchTrainings는 모든 필터 변경 시 호출되도록 이미 되어있음
-        // 이 watch 블록 끝에서 fetchTrainings가 호출되므로 추가 호출 필요 없음
     });
 
-
-    // searchQuery 또는 activeTab 바뀌면 자동으로 fetchTrainings 호출
-    watch([selectedYear, selectedSemester, selectedPosition], () => {
-        fetchCourseNames();
-    });
-    watch(
-        [searchQuery, activeTab, selectedYear, selectedSemester, selectedPosition, selectedCourse, selectedStatus, currentPage],
-        () => {
-            fetchTrainings();
-        },
-        { immediate: true }
-    );
-
-
-    
-    const filteredTrainingList = computed(() => {
-        // 1) 탭 필터
-        let filtered = trainingList.value.filter(item => {
-            if (activeTab.value === 'academy') return item.range === '연수원';
-            if (activeTab.value === 'research') return item.range === '연구회';
-            return true;
-        });
-
-        // filtered.sort((a, b) => {
-        //     const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0); // 날짜가 없으면 가장 오래된 날짜로 간주
-        //     const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-        //     return dateB.getTime() - dateA.getTime(); // 내림차순 정렬 (최신이 위로)
-        // });
-
-        return filtered;
-    });
 
     // ✅ 체크박스 그룹 관리
+    const filteredTrainingList = computed(() => trainingList.value)
+
     const {
         selectedItems: selectedTrainingItems,
         isAllSelected,
@@ -578,14 +479,14 @@
     // ✅ 일괄적용 
     async function onApply() {
         const selectedIds = selectedTrainingItems.value;
-
         const openingStatus = statusToOpening[selectedStatus.value];  // 숫자형 or null
-
         const idsPayload = [selectedIds.length, ...selectedIds];
+
         console.log('보낼 데이터:', {
             opening: openingStatus,
             ids: idsPayload,
         });
+        
         // 버튼 클릭 시 처리할 로직
         console.log('일괄적용 버튼 클릭됨')
 
@@ -609,13 +510,53 @@
             const result = await response.json();
             console.log('서버 응답:', result);
             toast.success(`${selectedIds.length}개의 강의가 "${selectedStatus.value}" 상태로 적용되었습니다.`)
-            await fetchTrainings();
             
         } catch (error) {
             console.error('fetch 에러:', error);
             toast.error(`적용 중 오류가 발생했습니다: ${error.message}`)
         }
     }
+
+    // ✅ 드롭다운으로 과정상태변경
+    async function updateOpeningStatus(id, newOpening, name, showToast = true) {
+        try {
+            const response = await fetch('http://localhost:8000/api/admin/courses/posts-public', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    opening: newOpening,
+                    ids: [id],
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('상태 변경 실패');
+            }
+
+            // 성공 시 로컬 상태 변경 반영
+            const target = trainingList.value.find(item => item.id === id);
+            if (target) {
+                target.opening = newOpening;
+                // openingText 변경도 필요하면 같이
+                target.openingText =
+                    newOpening === 1 ? '접수중' :
+                    newOpening === 0 ? '접수마감' : '과정종료';
+
+                if (showToast) {
+                    toast.success(
+                        `${name} ➡️ ${target.openingText}(으)로 변경되었습니다.`
+                    );
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(`상태 변경 중 오류가 발생했습니다: ${err.message}`);
+        }
+    }
+
 
     // ✅ 페이지 타이틀 설정
     const pageTitle = useState('pageTitle')
@@ -627,13 +568,6 @@
         router.push('/Training/Manage/Create');
     }
 
-    // ✅ 연수 검색
-    // const filteredTrainingList = computed(() => {
-    //     if (!searchQuery.value) return trainingList.value
-    //     return trainingList.value.filter(item =>
-    //         item.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-    //     )
-    // })
     onMounted(() => {
         fetchTrainings();
     });
