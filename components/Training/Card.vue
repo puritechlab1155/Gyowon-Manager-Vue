@@ -252,8 +252,8 @@ const parsedContent = computed(() => {
 
     let contentString = props.data.content;
 
-    console.log('=== 원본 데이터 ===');
-    console.log(contentString);
+    // console.log('=== 원본 데이터 ===');
+    // console.log(contentString);
 
     // --- 1. **핵심:** `<br />` 태그 바로 뒤에 붙은 `\r\n` 또는 `\n` 제거 ---
     // 이것이 과도한 줄 간격의 주범입니다. `\\r\\n` 형태로 문자열로 넘어온 경우를 포함합니다.
@@ -268,8 +268,8 @@ const parsedContent = computed(() => {
     contentString = contentString.replace(/\\'/g, "'");
     contentString = contentString.replace(/\\\\/g, '\\'); 
     
-    console.log('=== 1, 2단계 이스케이프 처리 후 ===');
-    console.log(contentString);
+    // console.log('=== 1, 2단계 이스케이프 처리 후 ===');
+    // console.log(contentString);
 
     // --- 3. HTML 엔티티 디코딩 (기존 HTML 태그 보존) ---
     // `&lt;strong&gt;` 같은 HTML 엔티티를 실제 태그로 변환합니다.
@@ -281,8 +281,8 @@ const parsedContent = computed(() => {
         .replace(/&#39;/g, "'")
         .replace(/&nbsp;/g, ' '); 
 
-    console.log('=== HTML 엔티티 디코딩 후 ===');
-    console.log(contentString);
+    // console.log('=== HTML 엔티티 디코딩 후 ===');
+    // console.log(contentString);
 
     // --- 4. **핵심:** * 사이의 텍스트를 <strong> 태그로 변환 (중복 방지 강화) ---
     // 이 정규식은 `*`로 시작하고 `*`로 끝나는 패턴을 찾되,
@@ -315,8 +315,8 @@ const parsedContent = computed(() => {
     // contentString = contentString.replace(/<strong>\s*<strong>(.*?)<\/strong>\s*<\/strong>/g, '<strong>$1</strong>');
     // contentString = contentString.replace(/<strong>\s*\*(.*?)\*\s*<\/strong>/g, '<strong>$1</strong>'); // ** 댄스화 부분 처리
 
-    console.log('=== * 변환 후 ===');
-    console.log(contentString);
+    // console.log('=== * 변환 후 ===');
+    // console.log(contentString);
 
     // --- 5. 최종적인 실제 줄바꿈 문자 (`\r\n` 또는 `\n`)를 <br /> 태그로 변환 ---
     // 위에서 이미 <br> 태그 뒤에 오는 \r\n은 제거했으므로, 여기서는 다른 의미 있는 줄바꿈만 변환합니다.
@@ -329,9 +329,9 @@ const parsedContent = computed(() => {
     // --- 7. font-size 스타일 제거 (원치 않으면 이 줄 제거) ---
     contentString = contentString.replace(/font-size:\s*[^;"]+;?/gi, '');
     
-    console.log('=== 최종 처리된 데이터 ===');
-    console.log(contentString);
-    console.log('strong 태그 개수:', (contentString.match(/<strong>/g) || []).length);
+    // console.log('=== 최종 처리된 데이터 ===');
+    // console.log(contentString);
+    // console.log('strong 태그 개수:', (contentString.match(/<strong>/g) || []).length);
 
     return contentString.trim();
 });

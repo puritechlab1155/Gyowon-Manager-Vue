@@ -30,21 +30,21 @@
 
                 </div>
             </div>
-            <div class="flex justify-between mt-5 gap-2 max-sm:flex-col-reverse">
+            <div class="flex justify-between mt-5 gap-2 max-sm:flex-col-reverse ">
             <!-- left-content -->
-            <div class="left-content flex items-center justify-between max-sm:justify-start gap-2">
+            <div class="left-content flex items-center justify-between max-sm:justify-start gap-2 ml-[-8px]">
                 <!-- <button id="selectAllBtn" class="left-content flex items-center justify-center gap-2 pl-5 pr-5 rounded-lg focus:outline-none whitespace-nowrap"> -->
-                    <CheckboxAll
-                        :modelValue="isAllSelected"
-                        @update:modelValue="toggleSelectAll"
-                    />         
+                <CheckboxAll
+                    :modelValue="isAllSelected"
+                    @update:modelValue="toggleSelectAll"
+                />         
                 <DropPayStatus v-model="selectedPayStatus" width="105px" height="50px"/>
                 <BtnUpdate @click="onApply" />
             </div>
                 <!-- right-content (탭들) -->
                 <div
                     class="right-content flex justify-end max-sm:justify-start">
-                    <BtnExcel :targetTableId="tableId" :filename="fileName" :headerTableId="tableHeaderId"/>
+                    <BtnExcel :targetTableId="tableId" :filename="fileName" :headerTableId="tableHeaderId" class="py-2.5"/>
                 </div>
             </div>
         </div>
@@ -111,14 +111,11 @@
                                     {{ enroll.courseEndDate }}</td>
                                 <td class="px-2 py-2 w-[6%] text-[#727272]">{{ enroll.courseday }}</td>
                                 <td class="px-2 py-2 w-[10%]">
-                                    <div class="text-[#727272]">{{ enroll.updatedAt }}</div>
+                                    <div class="text-[#727272]">{{ enroll.paidAt }}</div>
                                     <!-- 미입금일 경우 영수증 아이콘 없음 / 메모작업 없을 경우 코멘트 아이콘 없음 -->
                                     <div class="flex justify-center gap-2 px-2 mt-2">
                                         <div class="relative group">
-                                            <button
-                                                class="openReceiptSlide bg-[#E7F7F6] flex justify-center items-center p-2 rounded-lg">
-                                                <img src="../../assets/img/receipt.png" alt="영수증 아이콘" class="w-6 h-6" />
-                                            </button>
+                                            <BtnReceipt @click="openReceiptSlide(enroll)" />
                                         </div>
                                     </div>
                                 </td>
@@ -128,7 +125,7 @@
                                             <DropPayStatus v-model="enroll.paymentStatus" width="105px" height="50px"/>
                                         </div>
                                         <div class="flex justify-between gap-3">
-                                            <BtnEdit />
+                                            <BtnEdit @click="openEditModal(enroll)"/>
                                             <BtnDiscard @click="openDeleteModal(enroll)" />
                                         </div>
                                     </div>
@@ -152,10 +149,19 @@
         :visible="isDeleteModalVisible"
         :data="selectedTrainingItem"
         title="수강자"
+        :delete-type="'수강'"
+        :all-or-item="'선택된'"
         @confirm="handleDelete"
         @cancel="isDeleteModalVisible = false"
-        ref="deleteModalRef"
     />
+    <!-- 수정 모달 -->
+    <ModalPay
+        :visible="showEditModal"
+        :edit-data="selectedEnrollForEdit"
+        @close="showEditModal = false"
+        @save="handleSaveEdit"
+    />
+    <UserSlideRece v-if="showSlideRece" :user="selectedEnrollForReceipt" @close="showSlideRece = false" />
     <div class="flex justify-center items-center mt-4 mt-[100px]">
         <!-- 이전 / 다음 버튼 그룹 -->
         <div class="flex items-center space-x-3 max-lg:space-x-1">
@@ -245,12 +251,21 @@
     import BandSeoul from '../../components/Band/Seoul.vue';
     import BandGyeonggi from '../../components/Band/Gyeonggi.vue';
     import { useCheckboxGroup } from '../../composables/useCheckboxGroup'
-    import { onClickOutside } from '@vueuse/core';
+
 
     const selectedYear = ref('')
     const selectedSemester = ref('')
     const selectedCourse = ref('')
     const selectedPayStatus = ref('')
+
+    const showSlideRece = ref(false);
+    const selectedEnrollForReceipt = ref(null);
+
+    const openReceiptSlide = (enrollItem) => {
+        selectedEnrollForReceipt.value = enrollItem; // Store the enroll data
+        showSlideRece.value = true;               // Open the slide
+    };
+
 
     // ✅ 종목 밴드
     const getSubjectBadge = (subject) => {
@@ -320,71 +335,6 @@
         console.log('전체선택 상태:', newVal);
     });
 
-    // ✅ 삭제 모달 관련 ref 선언
-    const deleteModalRef = ref(null);
-    const isDeleteModalVisible = ref(false);
-    const selectedTrainingItem = ref(null); // 삭제할 아이템의 정보를 담을 ref
-
-        const openDeleteModal = (item) => {
-        selectedTrainingItem.value = item;
-        isDeleteModalVisible.value = true;
-    };
-
-    // ✅ BtnUpdate 클릭 시 호출될 함수 (삭제 모달 띄우기)
-    const onApply = () => {
-        // 여기에 어떤 아이템을 삭제할지 결정하는 로직 필요
-        // 예를 들어, 여러 개의 체크박스가 선택되어 있다면 selectedItems를 전달
-        // 또는 이 버튼이 특정 하나의 항목에 대한 삭제 버튼이라면 해당 항목의 ID를 전달
-        // 여기서는 selectedItems (체크박스에서 선택된 ID 배열)를 전달하는 것으로 가정합니다.
-        let modalDataTitle = '';
-        if (selectedItems.value.length === 1) {
-            // 단일 항목 선택 시: 해당 항목의 userName을 찾아서 사용
-            const selectedEnroll = enrollList.value.find(
-                (enroll) => enroll.id === selectedItems.value[0]
-            );
-            // ✅ enroll.userName을 modalDataTitle에 할당
-            modalDataTitle = selectedEnroll ? selectedEnroll.userName : '선택된 사용자';
-        } else {
-            // 다중 항목 선택 시: "N명의 사용자"로 표시
-            modalDataTitle = `${selectedItems.value.length}명의 사용자`;
-        }
-
-        // ModalDeleteConfirm에 title과 ids를 포함하는 객체를 전달
-        openDeleteModal({ title: modalDataTitle, ids: selectedItems.value });
-    };
-
-    // ✅ 모달에서 '예'를 눌렀을 때 실행될 삭제 로직
-    const handleDelete = () => {
-        console.log('✅ 삭제를 확정합니다. 삭제할 ID들:', selectedTrainingItem.value.ids)
-
-        isDeleteModalVisible.value = false; // 모달 닫기
-        selectedTrainingItem.value = null; // 선택된 아이템 초기화 (선택사항)
-    };
-
-    watch(isDeleteModalVisible, (newValue) => {
-        if (newValue) {
-            document.body.style.overflow = 'hidden'; // 모달 열리면 스크롤 숨김
-        } else {
-            document.body.style.overflow = ''; // 모달 닫히면 스크롤 다시 보이게
-        }
-    });
-
-    watch(isDeleteModalVisible, (newValue) => {
-        if (newValue) {
-            // 모달이 열리면 onClickOutside 리스너 활성화
-            // deleteModalRef는 ModalDeleteConfirm의 최상위 DOM 요소를 참조해야 합니다.
-            onClickOutside(deleteModalRef, () => {
-                if (isDeleteModalVisible.value) { // 모달이 현재 열려있을 때만 닫기
-                    isDeleteModalVisible.value = false;
-                    selectedTrainingItem.value = null;
-                }
-            });
-        }
-    }, { immediate: true });
-
-
-
-
     // ✅ 수강자 데이터 불러오기
     const fetchEnrollData = async () => {
         isLoadingEnroll.value = true;
@@ -416,27 +366,36 @@
                     // 🚀 enrollList에 데이터 할당 및 콘솔에 예쁘게 출력
                     enrollList.value = data.value.data.map(item => {
                         const mappedItem = {
+                            // 회원정보
                             id: item.id,
                             userName: item.user?.name ?? '이름 없음',
+                            // 강의정보
                             courseName: item.course?.course_name ?? '강좌명 없음',
-                            coursePlace: item.course?.course_place?.join(' , ') ?? '장소 정보 없음', // 배열 처리
+                            coursePlace: item.course?.course_place?.join(' , ') ?? '장소 정보 없음', 
+                            courseCode: item.course?.course_code ?? '코드 없음',
+
+                            // 수강정보
                             paymentStatus: item.payment?.pay_status ?? '정보 없음',
-                            // 추가적으로 필요한 데이터 매핑
                             jobClassification: item.course?.job_classification
                                 ? item.course.job_classification.replace('직무', '').trim()
                                 : '분류 없음',
+                            courseDivision: item.course?.division ?? '종목 없음',
                             applicationYear: item.course?.application_year ?? '연도 없음',
-                            semester: item.course?.semester ?? '학기 없음',
-                            courseCode: item.course?.course_code ?? '코드 없음',
-                            courseDivision: item.course?.division ?? '범위 없음',
+                            tuition: item.course?.tuition ?? 0,
                             courseStartDate: item.course?.course_start ?? '시작일 없음',
                             courseEndDate: item.course?.course_end ?? '종료일 없음',
                             courseday: item.course?.day_of_week ?? '요일 없음',
                             updatedAt: item.updated_at ? new Date(item.updated_at).toLocaleDateString('ko-KR') : '날짜 없음',
 
-                            adminMemo: item.payment?.admin_memo ?? null,
-                            userMemo: item.payment?.user_memo ?? null,
-                            refundType: item.payment?.refund_type ?? null
+                            // 추가 정보
+                            method: item.payment?.method ?? null, // 은행명
+                            paidAt: item.payment?.paid_at ?? null, //입금날짜
+                            amount: item.payment?.amount ?? 0, // 입금금액
+                            refundAmount: item.payment?.refund_amount ?? 0, // 환불금액
+                            refundType: item.payment?.refund_type ?? null, // 환불타입
+                            adminMemo: item.payment?.admin_memo ?? null, // 관리자 메모
+                            userMemo: item.payment?.user_memo ?? null, // 수강생 메모
+                            
                         };
                         return mappedItem;
                     });
@@ -489,12 +448,88 @@
             count: rawData[tab.id] || 0
         }))
     )
-    const pageTitle = useState('pageTitle')
 
+    // ✅ 삭제 모달 관련 ref 선언
+    const isDeleteModalVisible = ref(false);
+    const selectedTrainingItem = ref(null); // 삭제할 아이템의 정보를 담을 ref
+
+    const openDeleteModal = (item) => {
+        selectedTrainingItem.value = {
+            ids: [item.id],
+            title: item.userName
+        };
+        isDeleteModalVisible.value = true;
+    };
+
+    // 삭제모달 기능
+    const onApply = () => {
+        let modalDataTitle = '';
+        if (selectedItems.value.length === 1) {
+            // 단일 항목 선택 시: 해당 항목의 userName을 찾아서 사용
+            const selectedEnroll = enrollList.value.find(
+                (enroll) => enroll.id === selectedItems.value[0]
+            );
+            // enroll.userName을 modalDataTitle에 할당
+            modalDataTitle = selectedEnroll ? selectedEnroll.userName : '선택된 사용자';
+        } else {
+            // 다중 항목 선택 시: "N명의 사용자"로 표시
+            modalDataTitle = `${selectedItems.value.length}명의 사용자`;
+        }
+
+        // ModalDeleteConfirm에 title과 ids를 포함하는 객체를 전달
+        openDeleteModal({ title: modalDataTitle, ids: selectedItems.value });
+    };
+
+    // 삭제 모달에서 '예'를 눌렀을 때 실행될 삭제 로직
+    const handleDelete = () => {
+        console.log('✅ 삭제를 확정합니다. 삭제할 ID들:', selectedTrainingItem.value.ids)
+
+        isDeleteModalVisible.value = false; // 모달 닫기
+        selectedTrainingItem.value = null; // 선택된 아이템 초기화 (선택사항)
+    };
+
+
+    // ✅ 수정 모달 관련 ref 추가
+    const showEditModal = ref(false); // 수정 모달의 가시성 제어
+    const selectedEnrollForEdit = ref(null); // 수정할 수강생 데이터를 저장할 ref
+
+    // ✅ 수정 모달을 여는 함수
+    const openEditModal = (enrollItem) => {
+        selectedEnrollForEdit.value = { ...enrollItem }; // 원본 데이터 변경 방지를 위해 깊은 복사
+        showEditModal.value = true;
+    };
+
+    // ✅ 수정 모달에서 '저장' 버튼을 눌렀을 때 호출될 함수
+    const handleSaveEdit = (updatedData) => {
+        console.log('수정된 데이터:', updatedData);
+        // 여기에 업데이트된 데이터를 서버로 전송하는 로직 추가
+        // 예: axios.put(`/api/admin/enrolls/${updatedData.id}`, updatedData)
+
+        showEditModal.value = false; // 모달 닫기
+        // 데이터 업데이트 후 enrollList를 새로고침하거나 해당 항목만 업데이트
+        // fetchEnrollData(); // 전체 데이터 다시 불러오기 (간단하지만 비효율적일 수 있음)
+        // 또는 enrollList에서 해당 항목만 찾아 업데이트
+        const index = enrollList.value.findIndex(e => e.id === updatedData.id);
+        if (index !== -1) {
+            enrollList.value[index] = updatedData;
+        }
+    };
+
+    watch([isDeleteModalVisible, showEditModal], ([isDeleteOpen, isEditOpen]) => {
+        if (isDeleteOpen || isEditOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }, { immediate: true });
+
+
+
+    const pageTitle = useState('pageTitle')
+    
     onMounted(() => {
         pageTitle.value = '수강자 입금관리'
         fetchEnrollData()
-        document.body.style.overflow = '';
     })
 
 
@@ -505,9 +540,10 @@
 
 <style scoped>
 
-@media (max-width: 639.9px) {
+@media (max-width: 768px) {
     .left-content {
         justify-content: start;
+        margin-left: 10px !important;
     }
     .right-content {
         justify-content: start;

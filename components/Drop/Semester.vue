@@ -4,7 +4,24 @@
     @click.outside="closeDropdown">
         <button
         @click="toggleDropdown"
-        class="dropdown-button bg-[#FFFFFE] border border-[#DBDEE3] text-[#727272] py-3 px-2 pr-2 rounded-md focus:outline-none focus:border-[#2B5BBB] w-full flex justify-between items-center"
+        :class="[
+                'dropdown-button',
+                'bg-[#FEFEFE]',
+                'border',
+                'border-[#DBDEE3]',
+                'text-[#727272]',
+                props.paddingY, 
+                'px-2',
+                'pr-2',
+                'rounded-md',
+                'focus:outline-none',
+                'focus:border-[#2B5BBB]',
+                'w-full',
+                'flex',
+                'justify-between',
+                'items-center',
+                $attrs.class 
+            ]"
         type="button"
         >
         <span class="selected-option">{{ selectedLabel }}</span>
@@ -38,10 +55,10 @@
 <script setup>
     import { ref, computed } from 'vue'
     import { onClickOutside } from '@vueuse/core'
+    import { useAttrs } from 'vue' 
 
     const isOpen = ref(false)
     const dropdownRef = ref(null)
-
 
     const props = defineProps({
         modelValue: {
@@ -52,8 +69,15 @@
             type: Array,
             default: () => ['선택','1학기', '하계', '2학기', '동계'],
         },
+        paddingY: {
+            type: String,
+            default: 'py-3'
+        }
     })
 
+    const emit = defineEmits(['update:modelValue'])
+
+    const $attrs = useAttrs();
 
     onClickOutside(dropdownRef, () => {
         isOpen.value = false
@@ -76,8 +100,6 @@
     const selectedLabel = computed(() => {
         return props.modelValue !== '' ? props.modelValue : '학기'
     })
-
-    const emit = defineEmits(['update:modelValue'])
 
 </script>
 
