@@ -46,7 +46,7 @@
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">입금금액</label>
-                    <input type="number" :value="editData?.amount"
+                    <input type="number" :value="editData?.refundAmount"
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-3 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                     <span class="ml-1 font-semibold">원</span>
                 </div>

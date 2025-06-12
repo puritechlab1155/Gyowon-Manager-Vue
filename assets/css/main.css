@@ -142,14 +142,12 @@ tbody tr:last-child td:first-child {
 tbody tr:last-child td:last-child {
     border-bottom-right-radius: 12px;
 }
-/* 홀수줄 배경 */
-tbody tr:nth-child(odd) {
-    background-color: #FEFEFE; /* bg-[#FEFEFE] */
-}
 
-/* 짝수줄 배경 */
+tbody tr:nth-child(odd) {
+    background-color: #FEFEFE;
+}
 tbody tr:nth-child(even) {
-    background-color: #F8F8F8; /* bg-[#F8F8F8] */
+    background-color: #F8F8F8; 
 }
 .paperlogy {
     font-family: 'Paperlogy', 'Pretendard Variable', sans-serif !important;

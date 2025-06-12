@@ -96,10 +96,10 @@
 
                 <!-- 테이블 본문 부분 -->
                 <table id="excelTable"
-                    class="table-fixed w-full rounded-[12px] text-center mt-4 bg-[#FEFEFE]">
+                    class="payTable table-fixed w-full rounded-[12px] text-center mt-4">
                     <tbody>
-                        <template v-for="enroll in enrollList" :key="enroll.id">
-                            <tr class="bg-[#FEFEFE] h-[120px] border-b border-gray-400">
+                        <template v-for="(enroll, index) in filteredEnrollList" :key="enroll.id">
+                            <tr :style="getRowBgStyle(index)"  :class="getRowClass(index, enroll, false)">
                                 <td class="px-2 py-2 w-[4%] text-[#727272]">
                                     <CheckboxItem
                                         :checked="selectedItems.includes(enroll.id)"
@@ -127,7 +127,10 @@
                                     <!-- 미입금일 경우 영수증 아이콘 없음 / 메모작업 없을 경우 코멘트 아이콘 없음 -->
                                     <div class="flex justify-center gap-2 px-2 mt-2">
                                         <div class="relative group">
-                                            <BtnReceipt @click="openReceiptSlide(enroll)" />
+                                            <BtnReceipt 
+                                                v-if="enroll.paidAt" 
+                                                @click="openReceiptSlide(enroll)"
+                                            />
                                         </div>
                                     </div>
                                 </td>
@@ -148,11 +151,12 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="enroll.adminMemo || enroll.userMemo || enroll.refund_type" class="bg-[#FEFEFE] h-[50px] border-t w-[100%] border-dashed border-gray-300">
+                            <tr v-if="enroll.adminMemo || enroll.userMemo || enroll.refundType"
+                            :style="getRowBgStyle(index)" :class="getRowClass(index, enroll, true)">
                                 <td colspan="13" class="px-2 py-2">
-                                    <span v-if="enroll.adminMemo" class="text-[#F44336] whitespace-nowrap mr-4">7만원 입금 3만원 부족</span>
-                                    <span v-if="enroll.userMemo" class="text-[#2196F3] whitespace-nowrap mr-4">2종목 할인</span>
-                                    <span v-if="enroll.refund_type" class="text-black whitespace-nowrap">전액연기</span>
+                                    <span v-if="enroll.adminMemo" class="text-[#F44336] whitespace-nowrap mr-4">{{ enroll.adminMemo }}</span>
+                                    <span v-if="enroll.userMemo" class="text-[#2196F3] whitespace-nowrap mr-4">{{ enroll.userMemo }}</span>
+                                    <span v-if="enroll.refundType" class="text-black whitespace-nowrap">{{ enroll.refund_type }}</span>
                                 </td>
                             </tr>
                         </template>
@@ -278,6 +282,7 @@
             count: rawData.value[tab.id] || 0  // .value 붙여야 함
         }))
     )
+    const paymentStatusOptions = ['선택', '대기', '확정', '취소', '연기', '연기금']; 
     // ✅ 검색기능
     function onSearch(query) {
         searchQuery.value = query; // 상태만 바꾸기
@@ -287,7 +292,6 @@
     const enrollList = ref([]);
     const isLoadingEnroll = ref(false);
     
-
     const token = useCookie('auth_token').value
 
     // ✅ 과정명 드롭다운 옵션 불러오기
@@ -295,7 +299,6 @@
     async function fetchCourseNames() {
         const year = selectedYear.value;
         const semester = selectedSemester.value;
-        const tab = activeTab.value; // activeTab을 필터링 기준으로 사용
 
         // '선택'이거나 빈 문자열일 경우 API 호출하지 않고 초기화
         const invalidYearOrSemester = !year || year === '선택' || !semester || semester === '선택';
@@ -350,14 +353,9 @@
     // ✅ 수강자 데이터 불러오기
     const fetchEnrollData = async () => {
         isLoadingEnroll.value = true;
+        activeTab.value = 'all';
         try {
             const requestParams = {};
-
-            // 탭 필터
-            if (activeTab.value && activeTab.value !== 'all') {
-                requestParams.tab = activeTab.value;
-            }
-
             // 검색어 필터
             if (searchQuery.value) {
                 requestParams['filter[search]'] = searchQuery.value;
@@ -393,8 +391,7 @@
             if (error.value) {
                 toast.error('수강자 데이터를 불러오는데 실패했습니다.');
                 enrollList.value = []; // 에러 발생 시 리스트 초기화
-                totalPages.value = 1; 
-                rawData.value = { all: 0, 입금: 0, 미입금: 0, 수강대기: 0, 수강확정: 0, 수강취소: 0, 수강연기: 0, 환불: 0 };
+                totalPages.value = 1;
             } else {
                 // 📦 API에서 받은 원본 데이터 로깅 (확인용)
                 console.log('📦 받은 원본 데이터:', data.value);
@@ -412,8 +409,7 @@
                             // 강의정보
                             courseName: item.course?.course_name ?? '강좌명 없음',
                             courseCode: item.course?.course_code ?? '코드 없음',
-
-                            // 수강정보
+                            semester: item.course?.semester ?? '학기 없음',
                             paymentStatus: item.payment?.pay_status ?? '정보 없음',
                             jobClassification: item.course?.job_classification
                                 ? item.course.job_classification.replace('직무', '').trim()
@@ -430,47 +426,18 @@
                             paymentId: item.payment?.id ?? null, // 은행명
                             method: item.payment?.method ?? null, // 은행명
                             paidAt: item.payment?.paid_at ?? null, //입금날짜
-                            amount: item.payment?.amount ?? 0, // 입금금액
-                            refundAmount: item.payment?.refund_amount ?? 0, // 환불금액
+                            // amount: item.payment?.amount ?? 0, // 입금금액
+                            refundAmount: item.payment?.amount ?? 0, // 환불금액
                             refundType: item.payment?.refund_type ?? null, // 환불타입
                             adminMemo: item.payment?.admin_memo ?? null, // 관리자 메모
                             userMemo: item.payment?.user_memo ?? null, // 수강생 메모
-                            
                         };
                         return mappedItem;
                     });
 
                     if (data.value?.meta) {
                         totalPages.value = data.value.meta.last_page;
-
-                        Object.keys(rawData.value).forEach(key => {
-                            // 'all' 탭은 meta.total 값을 사용하고, 나머지는 0으로 초기화
-                            rawData.value[key] = (key === 'all') ? data.value.meta.total : 0;
-                        });
-                        data.value.data.forEach(item => {
-                            const status = item.payment?.pay_status;
-                            if (status && rawData.value.hasOwnProperty(status)) {
-                                // API의 status와 tabList의 id가 일치해야 합니다.
-                                // 예: API의 "확정" => tabList의 id '수강확정'에 매핑
-                                // API의 "대기" => tabList의 id '수강대기'에 매핑
-                                // 현재 API 응답의 `pay_status`는 "확정", "대기"로만 보입니다.
-                                // tabList의 id와 매핑 규칙이 필요합니다.
-                                // 여기서는 `pay_status`가 tabList의 `id`와 정확히 일치한다고 가정합니다.
-                                // 예: `pay_status`가 "입금"이면 `rawData.value.입금` 증가
-
-                                // API의 `pay_status` 값에 따라 `rawData.value`의 해당 속성을 증가시킵니다.
-                                // API의 "확정" -> '수강확정', "대기" -> '수강대기' 로 매핑합니다.
-                                let mappedStatus = status;
-                                if (status === '확정') mappedStatus = '수강확정';
-                                else if (status === '대기') mappedStatus = '수강대기'; // API 응답에 '대기'가 있다면
-                                // 기타 다른 상태도 이곳에 매핑 규칙을 추가할 수 있습니다.
-                                
-                                if (rawData.value.hasOwnProperty(mappedStatus)) {
-                                    rawData.value[mappedStatus]++;
-                                }
-                            }
-                        });
-                    }
+                        }
                     
                     // 🌟 콘솔에 처리된 수강자 목록 예쁘게 출력
                     console.groupCollapsed('📊 처리된 수강자 목록 (클릭하여 자세히 보기)');
@@ -489,6 +456,8 @@
                             console.log(`  개설 연도/학기: ${enroll.applicationYear}년 ${enroll.semester}`);
                             console.log(`  강의 기간: ${enroll.courseStartDate} ~ ${enroll.courseEndDate}`);
                             console.log(`  최종 업데이트: ${enroll.updatedAt}`);
+                            console.log(`  환불날짜: ${enroll.paiddAt}`);
+                            console.log(`  환불금액: ${enroll.refundAmount}`);
                             if (enroll.adminMemo) console.log(`  관리자 메모: ${enroll.adminMemo}`); // 추가
                             if (enroll.userMemo) console.log(`  사용자 메모: ${enroll.userMemo}`);   // 추가
                             if (enroll.refundType) console.log(`  환불 타입: ${enroll.refundType}`); // 추가
@@ -507,7 +476,7 @@
             enrollList.value = [];
             totalPages.value = 1;
         } finally {
-            isLoadingEnroll.value = false; // 로딩 종료
+            isLoadingEnroll.value = false;
         }
     };
 
@@ -562,6 +531,39 @@
             console.error('탭 카운트 데이터 fetch 실패:', err);
         }
     };
+
+    // ✅ 탭 필터링
+    const filteredEnrollList = computed(() => filterByTab(enrollList.value, activeTab.value));
+
+    function filterByTab(enrolls, tabId) {
+        if (tabId === 'all') return enrolls;
+        console.log('filterByTab called with tabId:', tabId);
+
+        return enrolls.filter(item => {
+            const status = item.paymentStatus;
+            const paidAt = item.paidAt;
+
+            switch(tabId) {
+            case '입금':
+                return !!paidAt;  // paidAt이 존재하면 입금
+            case '미입금':
+                return !paidAt;  // paidAt이 없으면 미입금
+            case '수강대기':
+                return status === '대기';
+            case '수강확정':
+                return status === '확정';
+            case '수강취소':
+                return status === '취소';
+            case '수강연기':
+                return status === '연기';
+            case '환불':
+                return status === '환불';
+            default:
+                return false;
+            }
+        });
+    }
+
 
     // ✅ 결제 상태 업데이트 함수 (fetch API 사용) ---
     const selectedPaymentIds = computed(() =>
@@ -735,7 +737,6 @@
         fetchTrainings();
     }
 
-
     // filters -> 드롭다운
     watch(() => filters.year, (val) => {
         if (selectedYear.value !== val) selectedYear.value = val;
@@ -841,21 +842,41 @@
         }
     }, { immediate: true });
 
+    // ✅ 테이블 홀짝
+    const getRowClass = (index, enroll, isSecondRow = false) => {
+        // 배경색은 이제 여기서 직접 반환하지 않고, getRowBgStyle()에서 처리합니다.
+        
+        if (isSecondRow) {
+            return ['h-[50px] border-b w-[100%] border-gray-500'];
+        } else {
+            const borderClass = (enroll.adminMemo || enroll.userMemo || enroll.refundType)
+                ? 'border-dashed border-gray-300'
+                : 'border-gray-500';
 
+            return ['border-b w-[100%]', borderClass];
+        }
+    };
 
+    const getRowBgStyle = (index) => {
+        const bgColor = index % 2 === 0 ? '#FEFEFE' : '#F8F8F8';
+        return { backgroundColor: bgColor };
+    };
     const pageTitle = useState('pageTitle')
 
-    watch(activeTab, async () => {
-        currentPage.value = 1;
-        await fetchEnrollData();
-    });
 
     watch([searchQuery, selectedYear, selectedSemester, selectedCourse, currentPage], async () => {
-        await fetchTabCountData();
+        activeTab.value = 'all';
         await fetchEnrollData();
-
     });
 
+    watch(activeTab, async (newTab, oldTab) => {
+        console.log('탭 변경:', oldTab, '→', newTab);
+        selectedYear.value = '';
+        selectedSemester.value = '';
+        selectedCourse.value = null;
+        currentPage.value = 1;
+    });
+    
     onMounted(() => {
         pageTitle.value = '수강자 입금관리'
         fetchEnrollData()
@@ -869,6 +890,13 @@
 
 
 <style scoped>
+
+tbody.payTable tr:nth-child(odd) {
+    background-color: unset !important;
+}
+tbody.payTable tr:nth-child(even) {
+    background-color: unset !important;
+}
 
 @media (max-width: 768px) {
     .left-content {
