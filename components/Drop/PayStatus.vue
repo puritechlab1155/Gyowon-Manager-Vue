@@ -81,7 +81,6 @@
             left: `${rect.left + window.scrollX}px`, // 버튼과 같은 X 위치에 메뉴 왼쪽 가장자리 배치
             width: `${rect.width}px`, // 버튼과 동일한 너비로 메뉴 설정
         };
-        console.log('Dropdown Menu Style:', dropdownMenuStyle.value); // ✅ 디버깅을 위한 콘솔 로그 추가
     };
 
     const toggleDropdown = async () => {

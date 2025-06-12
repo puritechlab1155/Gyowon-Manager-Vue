@@ -25,18 +25,16 @@ BtnEdit.vue 컴포넌트의 템플릿에 조건부 렌더링을 사용하여 to 
 </template>
 
 <script setup>
-// ✅ 'to' prop은 더 이상 필수가 아닙니다 (required: false)
-const props = defineProps({
-    to: {
-        type: [String, Object], // 문자열 또는 객체 (named route) 모두 허용
-        required: false // ⭐ 이제 필수가 아님
-    }
-});
+    // ✅ 'to' prop은 더 이상 필수가 아닙니다 (required: false)
+    const props = defineProps({
+        to: {
+            type: [String, Object], // 문자열 또는 객체 (named route) 모두 허용
+            required: false // ⭐ 이제 필수가 아님
+        }
+    });
 
-// ✅ 부모 컴포넌트로 'click' 이벤트를 발생시킴
-defineEmits(['click']); 
-
-console.log('BtnEdit: props.to =', props.to, 'typeof props.to =', typeof props.to);
+    // ✅ 부모 컴포넌트로 'click' 이벤트를 발생시킴
+    defineEmits(['click']); 
 </script>
 
 <style>

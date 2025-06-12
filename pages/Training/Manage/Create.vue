@@ -341,7 +341,7 @@
     const semesterOptions = ['선택하세요', '1학기', '하계', '2학기', '동계'];
     const semester = ref('')
 
-    const dayOptions = ['선택하세요', '해당없음', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+    const dayOptions = ['선택하세요', '해당없음', 'perPage월요일', 'perPage화요일', 'perPage수요일', 'perPage목요일', 'perPage금요일', 'perPage토요일', 'perPage일요일'];
     const day = ref('')
 
 
@@ -384,7 +384,7 @@
             content: content.value,
             status: course.value === '선택하세요' ? null : course.value,
             // course_place는 API에서 배열을 예상하므로 배열로 보냅니다.
-            course_place: eduPlace.value === '선택하세요' || !eduPlace.value ? null : [eduPlace.value],
+            course_place: eduPlace.value === '선택하세요' || !eduPlace.value.length ? null : eduPlace.value,
             // created_at 및 updated_at은 일반적으로 백엔드에서 설정하므로 프론트엔드에서 보낼 필요 없음
             // 만약 API에서 특정 created_at을 요구한다면, registDate와 registTime을 조합하여 보낼 수 있음
             // created_at: `${registDate.value}T${registTime.value}:00.000000Z`, // 예시

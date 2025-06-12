@@ -397,7 +397,9 @@
                         trainEndDate: course.course_end || '',
                         content: course.content || '',
                         statusLabel: statusOptions.find(opt => opt.value === (course.opening === null ? null : Number(course.opening)))?.label || '선택하세요', // opening 값을 label로 변환
-                        position: course.job_classification || '선택하세요',
+                        position: course.job_classification 
+                        ? course.job_classification.replace('직무', '').trim() 
+                        : '-', 
                         division: course.division || '선택하세요',
                         course: course.status || '선택하세요', // course_name을 course 드롭다운에 매핑
                         round: course.time || '선택하세요',
@@ -480,7 +482,7 @@
             time: round.value,
             semester: semester.value,
             day_of_week: day.value,
-            course_place: [eduPlace.value], // 배열로 보낼 경우
+            course_place: eduPlace.value === '선택하세요' || !eduPlace.value.length ? null : eduPlace.value,
             // 기타 필드...
         };
 

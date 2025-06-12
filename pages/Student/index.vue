@@ -116,7 +116,7 @@
                                 </td>
                                 <td class="px-2 py-2 w-[15%] text-[#727272] text-left">{{ enroll.courseName }}</td>
                                 <td class="px-2 py-2 w-[7%] text-[#292929] font-semibold ">{{ enroll.userName }}</td>
-                                <td class="px-2 py-2 w-[15%] text-[#727272]">중앙대학교 사범대학 부속고</td>
+                                <td class="px-2 py-2 w-[15%] text-[#727272]">{{ enroll.workPlace }}</td>
                                 <td class="px-2 py-2 w-[10%] text-[#727272]">{{ enroll.coursePlace }}</td>
                                 <td class="px-2 py-2 w-[9%] text-[#727272] leading-tight">{{ enroll.courseStartDate }} <br /> ~
                                     <br/>
@@ -135,11 +135,11 @@
                                     <div class="flex items-center gap-2 flex-col">
                                         <div class="flex justify-center mt-2">
                                             <DropPayStatus 
-                                                v-model="enroll.paymentStatus" 
+                                                :modelValue="enroll.paymentStatus"
                                                 width="105px" 
                                                 height="50px"
                                                 :options="paymentStatusOptions"
-                                                @update:modelValue="(newStatus) => updateIndividualPaymentStatus(enroll.id, newStatus)"/>
+                                                @update:modelValue="(newStatus) => updateIndividualPaymentStatus(enroll.paymentId, newStatus)"/>
                                         </div>
                                         <div class="flex justify-between gap-3">
                                             <BtnEdit @click="openEditModal(enroll)"/>
@@ -191,7 +191,7 @@
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="font-medium paperlogy text-[26px]">검색 조건 설정</h2>
             <button @click="closeModal">
-                <img src="../../../assets/img/close.png" alt="닫기" class="w-5 h-5" />
+                <img src="../../assets/img/close.png" alt="닫기" class="w-5 h-5" />
             </button>
             </div>
 
@@ -242,44 +242,14 @@
 
     const toast = useToast();
 
-    const selectedYear = ref('')
-    const selectedSemester = ref('')
-    const selectedCourse = ref('')
+    const selectedYear = ref('');
+    const selectedSemester = ref('');
+    const selectedCourse = ref('');
     const selectedPayStatus = ref('')
     const searchQuery = ref('')
 
     const currentPage = ref(1);
     const totalPages = ref(1);
-
-    const showSlideRece = ref(false);
-    const selectedEnrollForReceipt = ref(null);
-
-    const openReceiptSlide = (enrollItem) => {
-        selectedEnrollForReceipt.value = enrollItem; // Store the enroll data
-        showSlideRece.value = true;               // Open the slide
-    };
-
-
-    // ✅ 종목 밴드
-    const getSubjectBadge = (subject) => {
-        switch (subject) {
-            case '댄스스포츠': return BandDance;
-            case '라인댄스': return BandLine;
-            case '필라테스': return BandPilates;
-            case '웰빙댄스': return BandWelbing;
-            default: return null; // 일치하는 컴포넌트가 없을 경우 아무것도 렌더링하지 않음
-        }
-    };
-
-    // ✅ 직무 밴드
-    const getJobBadge = (job) => {
-        switch (job) {
-            case '자율': return BandFree;
-            case '서울': return BandSeoul;
-            case '경기': return BandGyeonggi;
-            default: return null; // 일치하는 컴포넌트가 없을 경우 아무것도 렌더링하지 않음
-        }
-    };
 
     // ✅ 원본 데이터
     const rawData = ref({ // rawData도 반응형으로 변경하여 API 응답에 따라 업데이트되도록
@@ -303,9 +273,9 @@
 
     // ✅ count 포함된 탭 목록 계산
     const tabsWithCount = computed(() =>
-        tabList.map(tab => ({
+            tabList.map(tab => ({
             ...tab,
-            count: rawData[tab.id] || 0
+            count: rawData.value[tab.id] || 0  // .value 붙여야 함
         }))
     )
     // ✅ 검색기능
@@ -317,24 +287,7 @@
     const enrollList = ref([]);
     const isLoadingEnroll = ref(false);
     
-    // ✅ 체크박스 그룹 관리
-    const {
-        selectedItems,
-        isAllSelected,
-        toggleItem,
-        toggleSelectAll,
-    } = useCheckboxGroup(enrollList);// ✅ enrollList의 ID 목록을 넘겨줍니다.
 
-    // 선택된 아이템들 확인 (디버깅용)
-    watch(selectedItems, (newVal) => { // ✅ selectedTrainingItems 대신 selectedItems 사용
-        console.log('선택된 아이템들:', newVal);
-    }, { deep: true });
-
-    watch(isAllSelected, (newVal) => {
-        console.log('전체선택 상태:', newVal);
-    });
-
-        
     const token = useCookie('auth_token').value
 
     // ✅ 과정명 드롭다운 옵션 불러오기
@@ -454,9 +407,10 @@
                             // 회원정보
                             id: item.id,
                             userName: item.user?.name ?? '이름 없음',
+                            workPlace: item.user?.workplace_name ?? '직장명 없음',
+                            coursePlace: item?.course_place?? '장소 정보 없음', 
                             // 강의정보
                             courseName: item.course?.course_name ?? '강좌명 없음',
-                            coursePlace: item.course?.course_place?.join(' , ') ?? '장소 정보 없음', 
                             courseCode: item.course?.course_code ?? '코드 없음',
 
                             // 수강정보
@@ -473,6 +427,7 @@
                             updatedAt: item.updated_at ? new Date(item.updated_at).toLocaleDateString('ko-KR') : '날짜 없음',
 
                             // 추가 정보
+                            paymentId: item.payment?.id ?? null, // 은행명
                             method: item.payment?.method ?? null, // 은행명
                             paidAt: item.payment?.paid_at ?? null, //입금날짜
                             amount: item.payment?.amount ?? 0, // 입금금액
@@ -556,42 +511,101 @@
         }
     };
 
-        // ✅ 결제 상태 업데이트 함수 (fetch API 사용) ---
-        const updatePaymentStatus = async (ids, payStatus) => {
+    // ✅ 탭 카운트 데이터 불러오기
+    const fetchTabCountData = async () => {
+        try {
+            const params = {};
+
+            if (selectedYear.value && selectedYear.value !== '선택') {
+                params.application_year = selectedYear.value;
+            }
+            if (selectedSemester.value && selectedSemester.value !== '선택') {
+                params.semester = selectedSemester.value;
+            }
+            if (selectedCourse.value && selectedCourse.value !== '선택') {
+                params.course_name = selectedCourse.value;
+            }
+            if (searchQuery.value) {
+                params['filter[search]'] = searchQuery.value;
+            }
+
+            const { data, error } = await useFetch('http://localhost:8000/api/admin/tab-menu', {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+                params,
+            });
+
+            if (!error.value && data.value) {
+                rawData.value = { all: 0, 입금: 0, 미입금: 0, 수강대기: 0, 수강확정: 0, 수강취소: 0, 수강연기: 0, 환불: 0 };
+
+                // all 값 넣기 (API에 total 없으면 0)
+                rawData.value.all = data.value.data.paid + data.value.data.unpaid + data.value.data.wait + data.value.data.success + data.value.data.cancel + data.value.data.hold + data.value.data.refund;
+
+                // 매칭되는 key별로 데이터 넣기 (한글 key에 맞게 매핑 필요)
+                const mapping = {
+                    '입금': 'paid',
+                    '미입금': 'unpaid',
+                    '수강대기': 'wait',
+                    '수강확정': 'success',
+                    '수강취소': 'cancel',
+                    '수강연기': 'hold',
+                    '환불': 'refund'
+                };
+
+                for (const [korKey, apiKey] of Object.entries(mapping)) {
+                    if (rawData.value.hasOwnProperty(korKey) && data.value.data.hasOwnProperty(apiKey)) {
+                    rawData.value[korKey] = data.value.data[apiKey];
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('탭 카운트 데이터 fetch 실패:', err);
+        }
+    };
+
+    // ✅ 결제 상태 업데이트 함수 (fetch API 사용) ---
+    const selectedPaymentIds = computed(() =>
+        enrollList.value
+            .filter(enroll => selectedItems.value.includes(enroll.id))
+            .map(enroll => enroll.paymentId)
+            .filter(id => id !== null)
+        );
+    const updatePaymentStatus = async (paymentIds, payStatus) => {
         if (!payStatus) {
             toast.warning('변경할 결제 상태를 선택해주세요.');
             return false;
         }
 
-        if (ids.length === 0) {
+        if (!paymentIds.length) {
             toast.warning('변경할 수강생을 한 명 이상 선택해주세요.');
             return false;
         }
 
         const payload = {
             pay_status: payStatus,
-            ids: ids
+            ids: [paymentIds.length, ...paymentIds], // payment.id 배열만 보내기
         };
+
         console.log('결제 상태 업데이트 요청 페이로드:', payload);
 
-        try {
-            const response = await fetch('http://localhost:8000/api/admin/payments/posts-public', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
+    try {
+        const response = await fetch('http://localhost:8000/api/admin/payments/posts-public', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || '네트워크 응답이 좋지 않습니다.');
-            }
-            await fetchEnrollData();
-
-            toast.success('결제 상태가 성공적으로 업데이트되었습니다.');
-            return true;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || '네트워크 응답이 좋지 않습니다.');
+        }
+        await fetchEnrollData();
+        toast.success('결제 상태가 성공적으로 업데이트되었습니다.');
+        
+        return true;
         } catch (error) {
             console.error('결제 상태 업데이트 실패:', error);
             toast.error(`결제 상태 업데이트 실패: ${error.message}`);
@@ -599,34 +613,76 @@
         }
     };
 
-    // --- 개별 드롭다운 변경 시 호출되는 함수 ---
-    const updateIndividualPaymentStatus = async (enrollId, newStatus) => {
-        // UI 즉시 업데이트를 위해 enrollList 직접 수정 (optimistic update)
-        const enrollIndex = enrollList.value.findIndex(enroll => enroll.id === enrollId);
+    // enrollList에서 enroll.id로 찾는 대신 payment.id로 찾아야 함
+    const updateIndividualPaymentStatus = async (paymentId, newStatus) => {
+        const enrollIndex = enrollList.value.findIndex(enroll => enroll.paymentId === paymentId);
         if (enrollIndex === -1) return;
 
         const oldStatus = enrollList.value[enrollIndex].paymentStatus;
-        enrollList.value[enrollIndex].paymentStatus = newStatus; // UI 먼저 변경
+        enrollList.value[enrollIndex].paymentStatus = newStatus;
 
-        const success = await updatePaymentStatus([enrollId], newStatus);
+        const success = await updatePaymentStatus([paymentId], newStatus);
         if (!success) {
-            // API 호출 실패 시 UI 롤백
-            enrollList.value[enrollIndex].paymentStatus = oldStatus;
+            enrollList.value[enrollIndex].payment.pay_status = oldStatus;
         }
     };
 
-    // --- 상단 업데이트 버튼 클릭 시 호출되는 함수 (일괄 변경) ---
+    // 상단 일괄 적용 버튼 클릭 시
     const onUpdateApply = async () => {
-        const success = await updatePaymentStatus(selectedItems.value, selectedPayStatus.value);
+        const success = await updatePaymentStatus(selectedPaymentIds.value, selectedPayStatus.value);
         if (success) {
-            // 성공 시 체크박스 선택 및 상단 드롭다운 초기화
             selectedItems.value = [];
             selectedPayStatus.value = '';
         }
     };
 
 
+    // ✅ 체크박스 그룹 관리
+    const {
+        selectedItems,
+        isAllSelected,
+        toggleItem,
+        toggleSelectAll,
+    } = useCheckboxGroup(enrollList);// ✅ enrollList의 ID 목록을 넘겨줍니다.
 
+    // 선택된 아이템들 확인 (디버깅용)
+    watch(selectedItems, (newVal) => { // ✅ selectedTrainingItems 대신 selectedItems 사용
+        console.log('선택된 아이템들:', newVal);
+    }, { deep: true });
+
+    watch(isAllSelected, (newVal) => {
+        console.log('전체선택 상태:', newVal);
+    });
+
+
+    const showSlideRece = ref(false);
+    const selectedEnrollForReceipt = ref(null);
+
+    const openReceiptSlide = (enrollItem) => {
+        selectedEnrollForReceipt.value = enrollItem; // Store the enroll data
+        showSlideRece.value = true;               // Open the slide
+    };
+
+    // ✅ 종목 밴드
+    const getSubjectBadge = (subject) => {
+        switch (subject) {
+            case '댄스스포츠': return BandDance;
+            case '라인댄스': return BandLine;
+            case '필라테스': return BandPilates;
+            case '웰빙댄스': return BandWelbing;
+            default: return null; // 일치하는 컴포넌트가 없을 경우 아무것도 렌더링하지 않음
+        }
+    };
+
+    // ✅ 직무 밴드
+    const getJobBadge = (job) => {
+        switch (job) {
+            case '자율': return BandFree;
+            case '서울': return BandSeoul;
+            case '경기': return BandGyeonggi;
+            default: return null; // 일치하는 컴포넌트가 없을 경우 아무것도 렌더링하지 않음
+        }
+    };
 
     // ✅ 필터
     const filterModalOpen = ref(false)
@@ -680,6 +736,37 @@
     }
 
 
+    // filters -> 드롭다운
+    watch(() => filters.year, (val) => {
+        if (selectedYear.value !== val) selectedYear.value = val;
+    });
+    watch(() => filters.semester, (val) => {
+        if (selectedSemester.value !== val) selectedSemester.value = val;
+    });
+    watch(() => filters.course, (val) => {
+        if (selectedCourse.value !== val) selectedCourse.value = val;
+    });
+
+    // 드롭다운 -> filters
+    watch([selectedYear, selectedSemester, selectedCourse], ([newYear, newSemester, newCourse]) => {
+        // 필터 객체 업데이트
+        filters.year = newYear === '선택' ? null : newYear;
+        filters.semester = newSemester === '선택' ? null : newSemester;
+        filters.course = newCourse === '선택' ? null : newCourse;
+
+        // appliedFilters를 즉시 업데이트
+        Object.keys(filters).forEach((key) => {
+            if (filters[key] !== null && filters[key] !== '') {
+                appliedFilters[key] = filters[key];
+            } else {
+                delete appliedFilters[key];
+            }
+        });
+
+    });
+
+
+
     // ✅ 삭제 모달 관련 ref 선언
     const isDeleteModalVisible = ref(false);
     const selectedTrainingItem = ref(null); // 삭제할 아이템의 정보를 담을 ref
@@ -724,13 +811,13 @@
     const showEditModal = ref(false); // 수정 모달의 가시성 제어
     const selectedEnrollForEdit = ref(null); // 수정할 수강생 데이터를 저장할 ref
 
-    // ✅ 수정 모달을 여는 함수
+    // 수정 모달을 여는 함수
     const openEditModal = (enrollItem) => {
         selectedEnrollForEdit.value = { ...enrollItem }; // 원본 데이터 변경 방지를 위해 깊은 복사
         showEditModal.value = true;
     };
 
-    // ✅ 수정 모달에서 '저장' 버튼을 눌렀을 때 호출될 함수
+    // 수정 모달에서 '저장' 버튼을 눌렀을 때 호출될 함수
     const handleSaveEdit = (updatedData) => {
         console.log('수정된 데이터:', updatedData);
         // 여기에 업데이트된 데이터를 서버로 전송하는 로직 추가
@@ -758,13 +845,21 @@
 
     const pageTitle = useState('pageTitle')
 
-    watch([activeTab, searchQuery, selectedYear, selectedSemester, selectedCourse, currentPage], () => {
-        fetchEnrollData();
+    watch(activeTab, async () => {
+        currentPage.value = 1;
+        await fetchEnrollData();
     });
-    
+
+    watch([searchQuery, selectedYear, selectedSemester, selectedCourse, currentPage], async () => {
+        await fetchTabCountData();
+        await fetchEnrollData();
+
+    });
+
     onMounted(() => {
         pageTitle.value = '수강자 입금관리'
         fetchEnrollData()
+        fetchTabCountData()
     })
 
 

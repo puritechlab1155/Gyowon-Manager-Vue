@@ -118,8 +118,8 @@
         <div class="p-4">
             <h2 class="paperlogy text-[26px] max-md:text-[22px] font-medium mt-5 mb-5">연수과정 검색</h2>
             <div class="flex items-end justify-end gap-2 mb-4">
-                <DropYear v-model="selectedYear" paddingY="py-1"/>
-                <DropSemester v-model="selectedSemester" paddingY="py-1"/>
+                <DropYear v-model="selectedYear" paddingY="py-1.5"/>
+                <DropSemester v-model="selectedSemester" paddingY="py-1.5"/>
                 <div class=" flex justify-end gap-2">
                     <div class="flex space-x-0">
                         <input type="text" placeholder="연수과정 검색" class="max-w-[180px] w-full px-2 g-[#FEFEFE] text-[#AFAFAF] placeholder-[#AFAFAF] border border-[#DBDEE3]
@@ -147,32 +147,65 @@
                     </thead>
                     <tbody id="courseTableBody">
                         <template v-for="(course, index) in courseList" :key="course.id">
-                            <tr class="cursor-pointer hover:bg-blue-50" @click="selectCourse(course.course_code)">
-                                <td class="border border-gray-300 px-2 py-1 text-center">
-                                    {{ (currentPage - 1) * pagination.per_page + index + 1 }}
-                                </td>
-                                <td class="border border-gray-300 px-2 py-1">
-                                    <div type="button"
-                                        class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1 max-sm:text-[14px] rounded-lg border border-[#2B5BBB]">
-                                        {{ course.course_code }}
-                                    </div>
-                                </td>
-                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.job_name }}</td>
-                                <td class="border border-gray-300 px-2 py-1 ">{{ course.course_name }}</td>
-                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.course_place }}</td>
-                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.day_of_week }}</td>
-                                <td class="border border-gray-300 px-2 py-1 text-center">{{ course.round || '0차' }}</td>
-                            </tr>
+                            <template v-if="Array.isArray(course.course_place) && course.course_place.length">
+                                <template v-for="(place, subIndex) in course.course_place" :key="`${course.id}-${subIndex}`">
+                                    <tr class="cursor-pointer hover:bg-blue-50" @click="selectCourse(course.course_code)">
+                                        <td class="border border-gray-300 px-2 py-1 text-center">
+                                            <span class="font-bold text-md text-[#5279C9]">
+                                                {{ (currentPage - 1) * perPage + index + 1 }}
+                                            </span>・{{ subIndex + 1 }}
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <div type="button"
+                                                class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1 max-sm:text-[14px] rounded-lg border border-[#2B5BBB]">
+                                                {{ course.course_code }}
+                                            </div>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-center">{{ course.job_classification.includes('서울직무') ? '서울' 
+                                                                                                    :  course.job_classification.includes('경기직무') ? '경기'
+                                                                                                    :  course.job_classification }}</td>
+                                        <td class="border border-gray-300 px-2 py-1 ">
+                                            {{ course.course_name }}
+                                            
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-center">{{ place }}</td>
+                                        <td class="border border-gray-300 px-2 py-1 text-center">{{ course.day_of_week.replace('매주', '').trim() }}</td>
+                                        <td class="border border-gray-300 px-2 py-1 text-center">{{ course.round || '0차' }}</td>
+                                    </tr>
+                                </template>
+                            </template>
+                                <!-- course_place가 없거나 비어 있을 때도 표시 -->
+                            <template v-else>
+                                <tr class="cursor-pointer hover:bg-blue-50" @click="selectCourse(course.course_code)">
+                                    <td class="border border-gray-300 px-2 py-1 text-center">
+                                        <span class="font-bold text-md text-[#5279C9]">
+                                            {{ (currentPage - 1) * perPage + index + 1 }}
+                                        </span>
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-1">
+                                        <div type="button"
+                                            class="text-center w-full bg-[#5279C9] text-[#FFFFFF] text-[16px] max-sm:px-1 px-4 py-1 max-sm:text-[14px] rounded-lg border border-[#2B5BBB]">
+                                            {{ course.course_code }}
+                                        </div>
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center">
+                                        {{ course.job_classification.includes('서울직무') ? '서울' 
+                                        :  course.job_classification.includes('경기직무') ? '경기'
+                                        :  course.job_classification }}
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-1">{{ course.course_name }}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center">-</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center">{{ course.day_of_week.replace('매주', '').trim() }}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center">{{ course.round || '0차' }}</td>
+                                </tr>
+                            </template>
                         </template>
                     </tbody>
                 </table>
-                <Pagenation
+                <PagenationMini
                     :currentPage="currentPage"
                     :totalPages="totalPages"
-                    @update:currentPage="page => {
-                        currentPage = page;
-                        fetchCourseList(); // ✅ 페이지 바뀔 때 데이터 다시 불러오기
-                    }"
+                    @update:currentPage="onPageChange"
                 />
             </div>
             <button @click="closeSlidePanel()" class="mt-4 bg-gray-200 px-4 py-2 rounded-md w-full">닫기</button>
@@ -221,22 +254,14 @@
 
     const modalRoot = ref(null);
 
-    // ✅ 외부 클릭시 닫기
-    watch(() => props.visible, (newVal) => {
-        if (newVal) {
-            onClickOutside(modalRoot, () => {
-                if (props.visible) {
-                    emit('close');
-                }
-            });
-        }
-    }, { immediate: true });
-
     const currentPage = ref(1); // 현재 페이지
-    const totalPages = ref(0); // 전체 페이지 수
+    const totalPages = ref(1);
     const perPage = ref(15); // 페이지당 개수 (기본값)
 
-
+    const onPageChange = (page) => {
+        currentPage.value = page;
+        fetchCourseList(); // 페이지 바뀔 때 API 다시 호출
+    }
     // ✅  검색 슬라이드 
     const isSlidePanelOpen = ref(false);
 
@@ -291,9 +316,15 @@
                 },
             })
             courseList.value = response?.data || []
+            const meta = response.meta || {}
+            const total = meta.total || 0
+            const perPage = meta.per_page || 15
+            totalPages.value = meta.last_page || Math.ceil(total / perPage)
             console.log('📦 받아온 과정 리스트:', courseList.value)
-            perPage.value = response.per_page || 15;
-            totalPages.value = Math.ceil((response.total || 0) / perPage.value);
+            console.log('🔍 total:', response.total)
+            console.log('📄 per_page:', response.per_page)
+            console.log('📦 courseList:', courseList.value)
+            console.log('🧮 totalPages:', totalPages.value)
 
         } catch (error) {
             console.error('❌ 과정 목록 요청 에러:', error)
@@ -307,6 +338,9 @@
         fetchCourseList()
     }, { immediate: true })
 
+    watch(currentPage, () => {
+        fetchCourseList();
+    });
 
 
 </script>
