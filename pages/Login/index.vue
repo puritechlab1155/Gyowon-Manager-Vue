@@ -2,12 +2,14 @@
   <div
     class="login-wrap min-h-screen flex items-start justify-center bg-[#F4F6FA] pt-[60px]"
   >
-    <div class="bg-white shadow-xl rounded-2xl p-15 max-sm:px-8 w-full max-w-xl">
+    <div
+      class="bg-white shadow-xl rounded-2xl p-15 max-sm:px-8 w-full max-w-xl"
+    >
       <h2 class="text-[40px] font-bold text-[#2B5BBB] text-center mb-6">
         로그인
       </h2>
 
-      <form @submit.prevent="handleLogin" class="space-y-4 max-sm:space-y-6 ">
+      <form @submit.prevent="handleLogin" class="space-y-4 max-sm:space-y-6">
         <div>
           <label class="block text-[18px] font-medium text-gray-700 mb-1"
             >아이디</label
@@ -15,7 +17,7 @@
           <input
             v-model="formValues.email"
             type="text"
-            placeholder="ExampleId"
+            placeholder="ID 입력"
             class="w-full border border-gray-300 text-[18px] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2B5BBB]"
             required
           />
@@ -42,8 +44,12 @@
         </button>
       </form>
 
-      <p class="text-[16px] text-center text-gray-500 mt-6">계정이 없으신가요?</p>
-      <p class="text-[18px] mt-3 text-[#2B5BBB] text-center font-medium hover:underline">
+      <p class="text-[16px] text-center text-gray-500 mt-6">
+        계정이 없으신가요?
+      </p>
+      <p
+        class="text-[18px] mt-3 text-[#2B5BBB] text-center font-medium hover:underline"
+      >
         관리자에게 문의바랍니다
       </p>
     </div>
@@ -81,7 +87,6 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-
 @media (max-width: 639.9px) {
   .login-wrap {
     padding-top: 30px;
