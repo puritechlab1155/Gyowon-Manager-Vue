@@ -289,13 +289,13 @@
     definePageMeta({ middleware: 'auth' });
     
     import { useState } from '#app'
-    import { onMounted } from 'vue'
     import DropUser from '../../components/Drop/User.vue'
     import { useRouter } from 'vue-router';
     import TinyEditor from '../../../components/TinyEditor.vue'
     import DropEduPlace from '../../../components/Drop/EduPlace.vue'; 
-
-    const { $toast } = useNuxtApp();
+    import { useToast } from 'vue-toastification'
+    const toast = useToast()
+    // import { toastWarning, toastError, toastSuccess } from '../../../composables/useToast.js';
     const router = useRouter()
 
     const eduPlace = ref([]);
@@ -341,91 +341,166 @@
     const semesterOptions = ['선택하세요', '1학기', '하계', '2학기', '동계'];
     const semester = ref('')
 
-    const dayOptions = ['선택하세요', '해당없음', 'perPage월요일', 'perPage화요일', 'perPage수요일', 'perPage목요일', 'perPage금요일', 'perPage토요일', 'perPage일요일'];
+    const dayOptions = ['선택하세요', '해당없음', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
     const day = ref('')
-
 
 
     const token = useCookie('auth_token').value;
 
-    const submitForm = async () => {
-        // 기본 유효성 검사 (필수)
-        if (!title.value || !type.value || !trainStartDate.value || !trainEndDate.value) {
-            $toast.error('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
-            return;
-        }
-        if (postEnd.value && postEnd.value < registDate.value) {
-            $toast.error('접수마감일은 등록일 이후여야 합니다.');
-            return;
-        }
+    // const submitForm = async () => {
+    //     // 기본 유효성 검사 (필수)
+    //     if (!title.value || !type.value || !trainStartDate.value || !trainEndDate.value) {
+    //         nuxtApp.toast.error('과정명, 연수주관, 연수기간 등을 모두 채워주세요.');
+    //         // toastError('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
+    //         return;
+    //     }
+    //     if (postEnd.value && postEnd.value < registDate.value) {
+    //         nuxtApp.toast.error('접수마감일은 등록일 이후여야 합니다.');
+    //         // toastError('접수마감일은 등록일 이후여야 합니다.');
+    //         return;
+    //     }
 
-        // API 요청을 위한 데이터(페이로드) 준비
-        const payload = {
-            // user_id: 1, // 예시: 사용자 ID, 실제로는 인증된 사용자 ID를 사용해야 함
-            // order: 1,
-            opening: selectedStatusObj.value ? selectedStatusObj.value.value : null,
-            course_code: course_code.value,
-            course_name: title.value,
-            status: selectedStatusObj.value ? selectedStatusObj.value.value : null,
-            range: type.value, // '연수원' 또는 '연구회'
-            job_classification: position.value === '선택하세요' ? null : position.value,
-            division: division.value === '선택하세요' ? null : division.value,
-            time: round.value === '선택하세요' ? null : round.value, // API는 'time' 필드를 회차로 사용
-            application_year: year.value ? String(year.value) : null, // API가 문자열을 예상한다면 String()으로 변환
-            semester: semester.value === '선택하세요' ? null : semester.value,
-            hour: hour.value !== '' ? Number(hour.value) : null,
-            grade: grade.value !== '' ? String(grade.value) : null,
-            tuition: tuitionFee.value !== '' ? Number(tuitionFee.value) : null,
-            application_fee: applicationFee.value !== '' ? Number(applicationFee.value) : null,
-            day_of_week: day.value === '선택하세요' ? null : day.value,
-            course_start: trainStartDate.value, // YYYY-MM-DD 형식
-            course_end: trainEndDate.value,     // YYYY-MM-DD 형식
-            course_post_end: postEnd.value, // 접수 종료일로 가정. 접수 시작일이 별도 필드면 추가해야 함.
-            content: content.value,
-            status: course.value === '선택하세요' ? null : course.value,
-            // course_place는 API에서 배열을 예상하므로 배열로 보냅니다.
-            course_place: eduPlace.value === '선택하세요' || !eduPlace.value.length ? null : eduPlace.value,
-            // created_at 및 updated_at은 일반적으로 백엔드에서 설정하므로 프론트엔드에서 보낼 필요 없음
-            // 만약 API에서 특정 created_at을 요구한다면, registDate와 registTime을 조합하여 보낼 수 있음
-            // created_at: `${registDate.value}T${registTime.value}:00.000000Z`, // 예시
-        };
+    //     // API 요청을 위한 데이터(페이로드) 준비
+    //     const payload = {
+    //         // user_id: 1, // 예시: 사용자 ID, 실제로는 인증된 사용자 ID를 사용해야 함
+    //         // order: 1,
+    //         opening: selectedStatusObj.value ? selectedStatusObj.value.value : null,
+    //         course_code: course_code.value,
+    //         course_name: title.value,
+    //         status: selectedStatusObj.value ? selectedStatusObj.value.value : null,
+    //         range: type.value, // '연수원' 또는 '연구회'
+    //         job_classification: position.value === '선택하세요' ? null : position.value,
+    //         division: division.value === '선택하세요' ? null : division.value,
+    //         time: round.value === '선택하세요' ? null : round.value, // API는 'time' 필드를 회차로 사용
+    //         application_year: year.value ? String(year.value) : null, // API가 문자열을 예상한다면 String()으로 변환
+    //         semester: semester.value === '선택하세요' ? null : semester.value,
+    //         hour: hour.value !== '' ? Number(hour.value) : null,
+    //         grade: grade.value !== '' ? String(grade.value) : null,
+    //         tuition: tuitionFee.value !== '' ? Number(tuitionFee.value) : null,
+    //         application_fee: applicationFee.value !== '' ? Number(applicationFee.value) : null,
+    //         day_of_week: day.value === '선택하세요' ? null : day.value,
+    //         course_start: trainStartDate.value, // YYYY-MM-DD 형식
+    //         course_end: trainEndDate.value,     // YYYY-MM-DD 형식
+    //         course_post_end: postEnd.value, // 접수 종료일로 가정. 접수 시작일이 별도 필드면 추가해야 함.
+    //         content: content.value,
+    //         status: course.value === '선택하세요' ? null : course.value,
+    //         // course_place는 API에서 배열을 예상하므로 배열로 보냅니다.
+    //         course_place: eduPlace.value === '선택하세요' || !eduPlace.value.length ? null : eduPlace.value,
+    //         // created_at 및 updated_at은 일반적으로 백엔드에서 설정하므로 프론트엔드에서 보낼 필요 없음
+    //         // 만약 API에서 특정 created_at을 요구한다면, registDate와 registTime을 조합하여 보낼 수 있음
+    //         // created_at: `${registDate.value}T${registTime.value}:00.000000Z`, // 예시
+    //     };
 
-        // API가 접수 시작일과 종료일을 구분한다면, `applyStartDate` 필드를 여기에 추가
-        // payload.application_start_date = applyStartDate.value; // 예시
+    //     // API가 접수 시작일과 종료일을 구분한다면, `applyStartDate` 필드를 여기에 추가
+    //     // payload.application_start_date = applyStartDate.value; // 예시
 
-        console.log("전송할 페이로드:", payload);
+    //     console.log("전송할 페이로드:", payload);
 
+    //     try {
+    //         // useFetch를 사용하여 POST 요청 수행
+    //         const { data, error } = await useFetch('http://localhost:8000/api/admin/courses', {
+    //             method: 'POST',
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`,
+    //                 'Content-Type': 'application/json', // JSON 페이로드임을 알림
+    //                 'Accept': 'application/json' // JSON 응답을 선호함을 알림
+    //             },
+    //             body: JSON.stringify(payload),
+    //         });
+
+    //         if (error.value) {
+    //             console.error('연수 등록 실패:', error.value.data || error.value);
+    //             // API에서 보낸 상세 에러 메시지가 있다면 사용
+    //             const errorMessage = error.value?.data?.message || error.value?.message || '연수 등록에 실패했습니다.';
+    //                 // toastError(errorMessage);
+    //                 nuxtApp.toast.error(errorMessage);
+    //             return;
+    //         }
+
+    //         if (data.value) {
+    //             nuxtApp.toast.success('연수 등록이 성공적으로 완료되었습니다!');
+    //             // toastSuccess('연수가 성공적으로 등록되었습니다!');
+    //             // 등록 성공 후 연수 목록 페이지로 이동
+    //             router.push('/training/manage');
+    //         }
+
+    //     } catch (e) {
+    //         toastError('연수 등록 중 알 수 없는 오류가 발생했습니다.');
+    //     }
+    // }
+
+    const postCourse = async (payload, token) => {
         try {
-            // useFetch를 사용하여 POST 요청 수행
             const { data, error } = await useFetch('http://localhost:8000/api/admin/courses', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json', // JSON 페이로드임을 알림
-                    'Accept': 'application/json' // JSON 응답을 선호함을 알림
-                },
-                body: JSON.stringify(payload),
-            });
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify(payload),
+            })
 
             if (error.value) {
-                console.error('연수 등록 실패:', error.value.data || error.value);
-                // API에서 보낸 상세 에러 메시지가 있다면 사용
-                const errorMessage = error.value?.data?.message || error.value?.message || '연수 등록에 실패했습니다.';
-                $toast.error(errorMessage);
-                return;
+            const errorMessage = error.value?.data?.message || error.value?.message || '연수 등록에 실패했습니다.'
+            return { success: false, message: errorMessage }
             }
 
             if (data.value) {
-                $toast.success('연수가 성공적으로 등록되었습니다!');
-                // 등록 성공 후 연수 목록 페이지로 이동
-                router.push('/training/manage');
+                router.push('/Training/manage')
+            return { success: true, message: '연수 등록이 성공적으로 완료되었습니다!' }
+            
             }
-
         } catch (e) {
-            console.error('연수 등록 중 오류 발생:', e);
-            $toast.error('연수 등록 중 알 수 없는 오류가 발생했습니다.');
+            return { success: false, message: '연수 등록 중 알 수 없는 오류가 발생했습니다.' }
         }
     }
+
+const submitForm = async () => {
+
+  // 기본 유효성 검사
+  if (!title.value || !type.value || !trainStartDate.value || !trainEndDate.value) {
+    toast.error('과정명, 연수주관, 연수기간 등을 모두 채워주세요.')
+    return
+  }
+  if (postEnd.value && postEnd.value < registDate.value) {
+    toast.error('접수마감일은 등록일 이후여야 합니다.')
+    return
+  }
+
+  const payload = {
+    opening: selectedStatusObj.value ? selectedStatusObj.value.value : null,
+    course_code: course_code.value,
+    course_name: title.value,
+    status: selectedStatusObj.value ? selectedStatusObj.value.value : null,
+    range: type.value,
+    job_classification: position.value === '선택하세요' ? null : position.value,
+    division: division.value === '선택하세요' ? null : division.value,
+    time: round.value === '선택하세요' ? null : round.value,
+    application_year: year.value ? String(year.value) : null,
+    semester: semester.value === '선택하세요' ? null : semester.value,
+    hour: hour.value !== '' ? Number(hour.value) : null,
+    grade: grade.value !== '' ? String(grade.value) : null,
+    tuition: tuitionFee.value !== '' ? Number(tuitionFee.value) : null,
+    application_fee: applicationFee.value !== '' ? Number(applicationFee.value) : null,
+    day_of_week: day.value === '선택하세요' ? null : day.value,
+    course_start: trainStartDate.value,
+    course_end: trainEndDate.value,
+    course_post_end: postEnd.value,
+    content: content.value,
+    status: course.value === '선택하세요' ? null : course.value,
+    course_place: eduPlace.value === '선택하세요' || !eduPlace.value.length ? null : eduPlace.value,
+  }
+
+  const result = await postCourse(payload, token)
+
+  if (result.success) {
+    toast.success(result.message)
+    
+  } else {
+    toast.error(result.message)
+  }
+}
 
     // ✅ 취소 버튼 클릭 시 호출될 함수
     const cancelForm = () => {

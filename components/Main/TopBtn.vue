@@ -1,6 +1,6 @@
 <template>
     <button id="topButton"
-        class="font-bold fixed bottom-5 right-5 bg-[#FEFEFE] border border-[#EFEFEF] text-[#2B5BBB] p-4 rounded-lg shadow-lg hover:bg-[#EDF3FF] transition-all"
+        class="font-bold fixed bottom-5 right-5 bg-[#FEFEFE] border border-[#EFEFEF] text-[#2B5BBB] p-4 rounded-lg shadow-lg hover:bg-[#EDF3FF] transition-all z-[9999]"
         @click="scrollToTop" v-show="isVisible">
         TOP
     </button>
@@ -37,12 +37,4 @@ onMounted(() => {
     }
 })
 
-onMounted(() => {
-    scrollContainer = document.getElementById('scroll-container')
-    if (scrollContainer) {
-        scrollContainer.addEventListener('scroll', checkScroll)
-    } else {
-        window.addEventListener('scroll', checkScroll)
-    }
-})
 </script>

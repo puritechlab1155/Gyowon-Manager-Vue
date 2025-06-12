@@ -330,9 +330,9 @@ import BandFree from '../../components/Band/Free.vue';
 import BandSeoul from '../../components/Band/Seoul.vue';
 import BandGyeonggi from '../../components/Band/Gyeonggi.vue';
 import { useCheckboxGroup } from '../../composables/useCheckboxGroup';
-// import { useToast } from 'vue-toastification';
-const { $toast } = useNuxtApp();
-// const toast = useToast();
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const selectedYear = ref('');
 const selectedSemester = ref('');
@@ -442,7 +442,7 @@ async function fetchCourseNames() {
     console.error('❌ 과정명 요청 에러 발생:', error);
     courseOptions.value = ['선택'];
     selectedCourse.value = '선택';
-    $toast.error('과정명을 불러오는데 실패했습니다.');
+    toast.error('과정명을 불러오는데 실패했습니다.');
   }
 }
 
@@ -496,7 +496,7 @@ const fetchEnrollData = async () => {
       }
     );
     if (error.value) {
-      $toast.error('수강자 데이터를 불러오는데 실패했습니다.');
+      toast.error('수강자 데이터를 불러오는데 실패했습니다.');
       enrollList.value = []; // 에러 발생 시 리스트 초기화
       totalPages.value = 1;
     } else {
@@ -535,7 +535,7 @@ const fetchEnrollData = async () => {
             paymentId: item.payment?.id ?? null, // 은행명
             method: item.payment?.method ?? null, // 은행명
             paidAt: item.payment?.paid_at ?? null, //입금날짜
-            // amount: item.payment?.amount ?? 0, // 입금금액
+            amount: item.payment?.amount ?? 0, // 입금금액
             refundAmount: item.payment?.amount ?? 0, // 환불금액
             refundType: item.payment?.refund_type ?? null, // 환불타입
             adminMemo: item.payment?.admin_memo ?? null, // 관리자 메모
@@ -569,7 +569,8 @@ const fetchEnrollData = async () => {
               `  강의 기간: ${enroll.courseStartDate} ~ ${enroll.courseEndDate}`
             );
             console.log(`  최종 업데이트: ${enroll.updatedAt}`);
-            console.log(`  환불날짜: ${enroll.paiddAt}`);
+            console.log(`  입금날짜: ${enroll.paidAt}`);
+            console.log(`  입금금액: ${enroll.amount}`);
             console.log(`  환불금액: ${enroll.refundAmount}`);
             if (enroll.adminMemo)
               console.log(`  관리자 메모: ${enroll.adminMemo}`); // 추가
@@ -718,12 +719,12 @@ const selectedPaymentIds = computed(() =>
 );
 const updatePaymentStatus = async (paymentIds, payStatus) => {
   if (!payStatus) {
-    $toast.warning('변경할 결제 상태를 선택해주세요.');
+    toast.warning('변경할 결제 상태를 선택해주세요.');
     return false;
   }
 
   if (!paymentIds.length) {
-    $toast.warning('변경할 수강생을 한 명 이상 선택해주세요.');
+    toast.warning('변경할 수강생을 한 명 이상 선택해주세요.');
     return false;
   }
 
@@ -752,12 +753,12 @@ const updatePaymentStatus = async (paymentIds, payStatus) => {
       throw new Error(errorData.message || '네트워크 응답이 좋지 않습니다.');
     }
     await fetchEnrollData();
-    $toast.success('결제 상태가 성공적으로 업데이트되었습니다.');
+    toast.success('결제 상태가 성공적으로 업데이트되었습니다.');
 
     return true;
   } catch (error) {
     console.error('결제 상태 업데이트 실패:', error);
-    $toast.error(`결제 상태 업데이트 실패: ${error.message}`);
+    toast.error(`결제 상태 업데이트 실패: ${error.message}`);
     return false;
   }
 };
@@ -943,41 +944,38 @@ const selectedTrainingItem = ref(null); // 삭제할 아이템의 정보를 담�
 
 const openDeleteModal = (item) => {
   selectedTrainingItem.value = {
-    ids: [item.id],
+    id: item.id, 
     title: item.userName,
   };
   isDeleteModalVisible.value = true;
 };
 
-// 삭제모달 기능
-const onApply = () => {
-  let modalDataTitle = '';
-  if (selectedItems.value.length === 1) {
-    // 단일 항목 선택 시: 해당 항목의 userName을 찾아서 사용
-    const selectedEnroll = enrollList.value.find(
-      (enroll) => enroll.id === selectedItems.value[0]
-    );
-    // enroll.userName을 modalDataTitle에 할당
-    modalDataTitle = selectedEnroll ? selectedEnroll.userName : '선택된 사용자';
-  } else {
-    // 다중 항목 선택 시: "N명의 사용자"로 표시
-    modalDataTitle = `${selectedItems.value.length}명의 사용자`;
-  }
-
-  // ModalDeleteConfirm에 title과 ids를 포함하는 객체를 전달
-  openDeleteModal({ title: modalDataTitle, ids: selectedItems.value });
-};
-
 // 삭제 모달에서 '예'를 눌렀을 때 실행될 삭제 로직
-const handleDelete = () => {
-  console.log(
-    '✅ 삭제를 확정합니다. 삭제할 ID들:',
-    selectedTrainingItem.value.ids
-  );
+const handleDelete = async () => {
+  const id = selectedTrainingItem.value.id;
 
-  isDeleteModalVisible.value = false; // 모달 닫기
-  selectedTrainingItem.value = null; // 선택된 아이템 초기화 (선택사항)
+  try {
+    const response = await fetch(`http://localhost:8000/api/admin/enrolls/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('삭제 실패');
+    }
+
+    console.log(`✅ ID ${id} 삭제 완료`);
+    isDeleteModalVisible.value = false;
+    selectedTrainingItem.value = null;
+    fetchEnrollData();
+  } catch (error) {
+    console.error('❌ 삭제 중 오류 발생:', error);
+  }
 };
+
 
 // ✅ 수정 모달 관련 ref 추가
 const showEditModal = ref(false); // 수정 모달의 가시성 제어
@@ -992,30 +990,21 @@ const openEditModal = (enrollItem) => {
 // 수정 모달에서 '저장' 버튼을 눌렀을 때 호출될 함수
 const handleSaveEdit = (updatedData) => {
   console.log('수정된 데이터:', updatedData);
-  // 여기에 업데이트된 데이터를 서버로 전송하는 로직 추가
-  // 예: axios.put(`/api/admin/enrolls/${updatedData.id}`, updatedData)
-
-  showEditModal.value = false; // 모달 닫기
-  // 데이터 업데이트 후 enrollList를 새로고침하거나 해당 항목만 업데이트
-  // fetchEnrollData(); // 전체 데이터 다시 불러오기 (간단하지만 비효율적일 수 있음)
-  // 또는 enrollList에서 해당 항목만 찾아 업데이트
-  const index = enrollList.value.findIndex((e) => e.id === updatedData.id);
+  
+  // enrollList에서 해당 항목 업데이트
+  const index = enrollList.value.findIndex((e) => e.paymentId === updatedData.paymentId);
   if (index !== -1) {
-    enrollList.value[index] = updatedData;
+    enrollList.value[index] = { ...enrollList.value[index], ...updatedData };
   }
+  
+  // 모달 닫기
+  closeEditModal();
 };
 
-watch(
-  [isDeleteModalVisible, showEditModal],
-  ([isDeleteOpen, isEditOpen]) => {
-    if (isDeleteOpen || isEditOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-  },
-  { immediate: true }
-);
+const closeEditModal = () => {
+  showEditModal.value = false;
+  selectedEnrollForEdit.value = null;
+};
 
 // ✅ 테이블 홀짝
 const getRowClass = (index, enroll, isSecondRow = false) => {

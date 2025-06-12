@@ -18,7 +18,7 @@
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">수강코드</label>
-                    <input type="text" :value="Number(editData?.amount) || 0" 
+                    <input type="text" v-model="localEditData.courseCode"
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-3 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                     <button
                         @click="openSlidePanel" class="bg-[#2B5BBB] text-white px-3 py-2 h-[45px] rounded-md hover:bg-[#1d4691] flex-shrink-0">찾기</button>
@@ -40,13 +40,13 @@
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">입금날짜</label>
-                    <input type="date" :value="editData?.paidAt"
+                    <input type="date" v-model="localEditData.paidAt"
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-2 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                 </div>
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">입금금액</label>
-                    <input type="number" :value="Number(editData?.amount || 0)"
+                    <input type="text" v-model="localEditData.amount"
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-3 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                     <span class="ml-1 font-semibold">원</span>
                 </div>
@@ -71,7 +71,7 @@
                         <div class="flex max-sm:flex-col items-start gap-2 whitespace-nowrap">
                             <label class="w-28 font-semibold shrink-0">연기 / 환불</label>
                             <div class="flex items-center gap-2 w-full">
-                                <input type="number" :value="Number(editData?.refundAmount)"
+                                <input type="text" v-model="localEditData.refundAmount"
                                     class="bg-white border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-2 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                                 <span class="ml-1 font-semibold">원</span>
                                 <DropAll
@@ -84,13 +84,13 @@
 
                         <div class="flex max-xl:flex-col items-start gap-2 whitespace-nowrap">
                             <label class="w-28 font-semibold shrink-0 text-red-600">관리자 메모</label>
-                            <textarea :value="editData?.adminMemot"
+                            <textarea v-model="localEditData.adminMemo"
                                 class="bg-white border border-[#DBDEE3] text-[#727272] py-2 px-3 pr-2 rounded-md focus:outline-none w-full h-[100px] resize-none">{{ editData?.adminMemo }}</textarea>
                         </div>
 
                         <div class="flex max-xl:flex-col items-start gap-2 whitespace-nowrap">
                             <label class="w-28 font-semibold shrink-0 text-blue-600">연수생 메모</label>
-                            <textarea :value="editData?.userMemo"
+                            <textarea v-model="localEditData.userMemo"
                                 class="bg-white border border-[#DBDEE3] text-[#727272] py-2 px-3 pr-2 rounded-md focus:outline-none w-full h-[100px] resize-none">{{ editData?.userMemo }}</textarea>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
 
                 <button id="submitEditBtn"
                     class="bg-[#2B5BBB] hover:bg-[#1d4691] text-white font-semibold py-2 px-6 text-[18px] after-small rounded-md shadow-sm"
-                    @click="$emit('save', editData)" >
+                    @click="submitEdit()" >
                     수정하기
                 </button>
             </div>
@@ -215,12 +215,12 @@
 
 <script setup>
     import { ref, watch } from 'vue';
-    import { onClickOutside } from '@vueuse/core';
-    // import { useToast } from 'vue-toast-notification';
-
+    import { useToast } from 'vue-toastification';
+    import { useRoute } from 'vue-router'
     // const toast = useToast();
+    const toast = useToast()
     const token = useCookie('auth_token').value
-    // `editData` prop을 정의합니다. 부모 컴포넌트로부터 수정할 데이터를 받습니다.
+    const modalRoot = ref(null);
     const props = defineProps({
         visible: Boolean,
         editData: {
@@ -228,9 +228,9 @@
             default: () => ({})
         }
     });
-    // 모달 내부에서 데이터를 수정할 경우를 대비해 `editData`를 반응형으로 복사합니다.
-    // 이렇게 하면 부모에서 넘어온 prop을 직접 수정하지 않고,
-    // 내부에서 수정된 데이터를 저장 시에만 부모로 전달할 수 있습니다.
+
+    const emit = defineEmits(['close', 'save']);
+
     const methodOptions = ['선택하세요', '기업', '농협1', '농협2', '연기금 사용', '리브머니'];
     const refundTypeOptions = ['선택하세요', '연기/환불', '전액연기', '부분연기', '전액환불', '부분환불', "연기금 사용완료"];
 
@@ -238,21 +238,84 @@
 
     watch(() => props.editData, (newVal) => {
         if (newVal) {
-            // 깊은 복사를 통해 부모 prop의 원본 객체가 변경되지 않도록 합니다.
             localEditData.value = { ...newVal };
+            
+            // 날짜 형식 맞추기 (YYYY-MM-DD)
+            if (localEditData.value.paidAt) {
+            localEditData.value.paidAt = new Date(localEditData.value.paidAt).toISOString().split('T')[0];
+            }
         }
     }, { immediate: true, deep: true });
 
-    // 모달 이벤트를 정의합니다.
-    defineEmits(['close', 'save', 'findCourseCode']); // 'findCourseCode'는 '찾기' 버튼용
 
-    watch(() => props.editData, (newVal) => {
-        if (newVal) {
-            localEditData.value = { ...newVal };
+
+    // ===== API 함수 (토스트 제거) =====
+    import { $fetch } from 'ofetch';
+
+    const putPayment = async (editData, token, paymentId) => {
+        try {
+            const response = await $fetch(`http://localhost:8000/api/admin/payments/${paymentId}`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: editData, // JSON.stringify 필요 없음
+            });
+            return { success: true, message: '결제가 성공적으로 수정되었습니다!', data: response };
+        } catch (error) {
+            console.error('❌ PUT 실패:', JSON.stringify(error, null, 2));
+            const message = error?.data?.message || error?.message || '결제 수정 중 오류 발생';
+            return { success: false, message, error };
         }
-    }, { immediate: true, deep: true });
+    };
 
-    const modalRoot = ref(null);
+    console.log('🔥 localEditData:', localEditData.value);
+    // ===== 컴포넌트 레벨에서 토스트 처리 =====
+    const submitEdit = async () => {
+        const paymentId = localEditData.value.paymentId;
+
+        if (!paymentId) {
+            toast.error('결제 ID를 찾을 수 없습니다.');
+            return;
+        }
+
+        const processedData = {
+        // 기본 필드 (필요하면 id 등도 넣어도 됨)
+            enroll_id: localEditData.value.id,
+            method: localEditData.value.method,
+            paid_at: localEditData.value.paidAt,
+            amount: typeof localEditData.value.amount === 'string'
+                ? Number(localEditData.value.amount.replace(/,/g, ''))
+                : localEditData.value.amount,
+            refund_amount: typeof localEditData.value.refundAmount === 'string'
+                ? Number(localEditData.value.refundAmount.replace(/,/g, ''))
+                : (localEditData.value.refundAmount || 0),
+            refund_type: localEditData.value.refundType,
+            admin_memo: localEditData.value.adminMemo,
+            user_memo: localEditData.value.userMemo,
+        };
+
+        console.log('PUT 요청 전 payload:', processedData);
+
+        // API 호출
+        const result = await putPayment(processedData, token, paymentId);
+        // 클라이언트에서만 토스트 실행
+        if (process.client) {
+            console.log('client');
+            if (result.success) {
+                toast.success(result.message);
+            } else {
+                toast.error(result.message);
+            }
+        }
+
+        // 성공시에만 부모에게 emit
+        if (result.success) {
+            emit('save', processedData);
+        }
+    };
+
+
 
     const currentPage = ref(1); // 현재 페이지
     const totalPages = ref(1);
@@ -262,6 +325,7 @@
         currentPage.value = page;
         fetchCourseList(); // 페이지 바뀔 때 API 다시 호출
     }
+
     // ✅  검색 슬라이드 
     const isSlidePanelOpen = ref(false);
 
@@ -275,10 +339,9 @@
         isSlidePanelOpen.value = false;
     };
 
-    const selectCourse = (courseCode) => {
-        // 예시: 선택된 courseCode를 localEditData에 반영하고 패널 닫기
-        localEditData.value.courseCode = courseCode;
-        toast.success(`"${course.course_name}" 과정을 선택하셨습니다.`);
+    const selectCourse = (selectedCourse) => { // 인수를 courseCode -> selectedCourse로 변경
+        localEditData.value.courseCode = selectedCourse.course_code;
+        toast.success(`"${selectedCourse.course_name}" 과정을 선택하셨습니다.`); // ✅ 이제 course_name에 접근 가능
         closeSlidePanel();
     };
 

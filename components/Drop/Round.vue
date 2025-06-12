@@ -1,7 +1,7 @@
 <template>
     <div 
         ref="dropdownRef" 
-        class="relative dropdown w-[85px] max-2xl:w-[65px]]"
+        class="relative dropdown w-[100px]"
         @click.outside="closeDropdown">
             <button
             @click="toggleDropdown"
