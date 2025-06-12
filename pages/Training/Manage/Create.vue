@@ -262,7 +262,7 @@
         </div>
 
     </form>
-    <p class="mt-4 text-gray-700">course_code(과정코드): {{ course_code }}</p>
+    <!-- <p class="mt-4 text-gray-700">course_code(과정코드): {{ course_code }}</p>
     <p class="mt-4 text-gray-700">registDate(등록날짜): {{ registDate }}</p>
     <p class="mt-4 text-gray-700">course_post_end(접수마감날): {{ postEnd }}</p>
     <p class="mt-4 text-gray-700">title(과정명): {{ title }}</p>
@@ -281,24 +281,24 @@
     <p class="mt-4 text-gray-700">day(요일): {{ day }}</p>
     <p class="mt-4 text-gray-700">eduPlace(교육장소): {{ eduPlace }}</p>
     <p class="mt-4 text-gray-700">course_start(연수시작): {{ trainStartDate }} </p>
-    <p class="mt-4 text-gray-700">course_end(연수끝): {{ trainEndDate }} </p>
+    <p class="mt-4 text-gray-700">course_end(연수끝): {{ trainEndDate }} </p> -->
 </template>
 
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { useState } from '#app'
     import { onMounted } from 'vue'
     import DropUser from '../../components/Drop/User.vue'
-    import { useToast } from 'vue-toastification'
     import { useRouter } from 'vue-router';
     import TinyEditor from '../../../components/TinyEditor.vue'
     import DropEduPlace from '../../../components/Drop/EduPlace.vue'; 
-    const eduPlace = ref([]);
 
+    const { $toast } = useNuxtApp();
     const router = useRouter()
-    const toast = useToast()
 
-
+    const eduPlace = ref([]);
     const course_code = ref('2025-4-A01171601')
     const registDate = ref(getTodayDate());
     const postEnd = ref('');
@@ -351,11 +351,11 @@
     const submitForm = async () => {
         // 기본 유효성 검사 (필수)
         if (!title.value || !type.value || !trainStartDate.value || !trainEndDate.value) {
-            toast.error('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
+            $toast.error('과정명, 연수주관, 연수기간...등을 모두 채워주세요.');
             return;
         }
         if (postEnd.value && postEnd.value < registDate.value) {
-            toast.error('접수마감일은 등록일 이후여야 합니다.');
+            $toast.error('접수마감일은 등록일 이후여야 합니다.');
             return;
         }
 
@@ -410,21 +410,20 @@
             if (error.value) {
                 console.error('연수 등록 실패:', error.value.data || error.value);
                 // API에서 보낸 상세 에러 메시지가 있다면 사용
-                const errorMessage = error.value.data?.message || '연수 등록에 실패했습니다.';
-                toast.error(errorMessage);
+                const errorMessage = error.value?.data?.message || error.value?.message || '연수 등록에 실패했습니다.';
+                $toast.error(errorMessage);
                 return;
             }
 
             if (data.value) {
-                console.log('연수 등록 성공:', data.value);
-                toast.success('연수가 성공적으로 등록되었습니다!');
+                $toast.success('연수가 성공적으로 등록되었습니다!');
                 // 등록 성공 후 연수 목록 페이지로 이동
                 router.push('/training/manage');
             }
 
         } catch (e) {
             console.error('연수 등록 중 오류 발생:', e);
-            toast.error('연수 등록 중 알 수 없는 오류가 발생했습니다.');
+            $toast.error('연수 등록 중 알 수 없는 오류가 발생했습니다.');
         }
     }
 

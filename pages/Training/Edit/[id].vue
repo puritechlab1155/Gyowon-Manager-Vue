@@ -266,6 +266,8 @@
 </template>
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { useState } from '#app'
     import { ref, computed, onMounted } from 'vue'
     import DropUser from '../../components/Drop/User.vue'

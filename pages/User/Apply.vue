@@ -5,6 +5,8 @@
 </template>
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { useState } from '#app'
     import { onMounted } from 'vue'
     

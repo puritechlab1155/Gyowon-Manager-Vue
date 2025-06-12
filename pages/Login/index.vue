@@ -57,33 +57,34 @@
 </template>
 
 <script setup>
-import { useState } from '#app';
+  import { useState } from '#app';
 
-const pageTitle = useState('pageTitle');
-pageTitle.value = '관리자';
+  const pageTitle = useState('pageTitle');
+  pageTitle.value = '관리자';
 
-const router = useRouter();
-const { login, isLoggedIn } = await useAuth();
-onMounted(() => {
-  if (isLoggedIn.value) {
-    router.push('/login');
-  }
-});
-const formValues = reactive({
-  email: '',
-  password: '',
-});
-const handleLogin = async () => {
-  if (!formValues.email) {
-    //TODO return alert input email
-    return;
-  }
-  if (!formValues.password) {
-    //TODO return alert input password
-    return;
-  }
-  await login({ ...formValues });
-};
+  const router = useRouter();
+  const { login, isLoggedIn } = await useAuth();
+  
+  onMounted(() => {
+    if (isLoggedIn.value) {
+      router.push('/login');
+    }
+  });
+  const formValues = reactive({
+    email: '',
+    password: '',
+  });
+  const handleLogin = async () => {
+    if (!formValues.email) {
+      //TODO return alert input email
+      return;
+    }
+    if (!formValues.password) {
+      //TODO return alert input password
+      return;
+    }
+    await login({ ...formValues });
+  };
 </script>
 
 <style scoped>

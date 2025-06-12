@@ -332,6 +332,8 @@
 </template>
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { useState } from '#app'
 
     const pageTitle = useState('pageTitle')

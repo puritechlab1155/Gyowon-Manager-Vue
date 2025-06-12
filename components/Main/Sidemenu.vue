@@ -535,7 +535,7 @@
 </template>
 
 <script setup>
-    import { ref, defineProps, defineExpose } from 'vue';
+    import { ref } from 'vue';
 
     // ✅ 사이드 메뉴 전체의 열림/닫힘 상태 (prop으로 받음)
     const props = defineProps({

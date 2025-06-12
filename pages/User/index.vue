@@ -18,6 +18,8 @@
 </template>
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useState } from '#imports'
     import { useRouter } from 'vue-router';

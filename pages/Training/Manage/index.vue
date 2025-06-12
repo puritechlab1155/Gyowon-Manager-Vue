@@ -119,6 +119,8 @@
 
 
 <script setup>
+    definePageMeta({ middleware: 'auth' });
+    
     import { useState } from '#app'
     import TrainingTab from '../../../components/Training/Tab.vue'
     import SearchBar from '~/components/SearchBar.vue'

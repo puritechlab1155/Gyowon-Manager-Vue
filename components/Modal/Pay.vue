@@ -18,7 +18,7 @@
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">수강코드</label>
-                    <input type="text" :value="editData?.courseCode" 
+                    <input type="text" :value="Number(editData?.amount) || 0" 
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-3 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                     <button
                         @click="openSlidePanel" class="bg-[#2B5BBB] text-white px-3 py-2 h-[45px] rounded-md hover:bg-[#1d4691] flex-shrink-0">찾기</button>
@@ -46,7 +46,7 @@
 
                 <div class="flex items-center gap-2 whitespace-nowrap">
                     <label class="w-28 max-sm:w-16 font-semibold shrink-0">입금금액</label>
-                    <input type="number" :value="editData?.refundAmount"
+                    <input type="number" :value="Number(editData?.amount || 0)"
                         class="bg-[#FAFAFA] border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-3 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                     <span class="ml-1 font-semibold">원</span>
                 </div>
@@ -71,7 +71,7 @@
                         <div class="flex max-sm:flex-col items-start gap-2 whitespace-nowrap">
                             <label class="w-28 font-semibold shrink-0">연기 / 환불</label>
                             <div class="flex items-center gap-2 w-full">
-                                <input type="number" :value="editData?.refundAmount"
+                                <input type="number" :value="Number(editData?.refundAmount)"
                                     class="bg-white border border-[#DBDEE3] text-[#727272] text-[18px] after-small py-2 px-2 pr-2 rounded-md focus:outline-none h-[45px] w-full" />
                                 <span class="ml-1 font-semibold">원</span>
                                 <DropAll
