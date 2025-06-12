@@ -460,6 +460,7 @@ const fetchEnrollData = async () => {
   activeTab.value = 'all';
   try {
     const requestParams = {};
+    
     // 검색어 필터
     if (searchQuery.value) {
       requestParams['filter[search]'] = searchQuery.value;
@@ -479,7 +480,10 @@ const fetchEnrollData = async () => {
     if (selectedCourse.value && selectedCourse.value !== '선택') {
       requestParams.course_name = selectedCourse.value;
     }
-
+    // 탭 필터 (입금, 미입금 등)
+    if (tabValue && tabValue !== 'all') {
+      requestParams.status = tabValue;
+    }
     // 페이지네이션
     requestParams.page = currentPage.value;
 

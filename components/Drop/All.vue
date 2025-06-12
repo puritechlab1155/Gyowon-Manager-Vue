@@ -1,9 +1,9 @@
 <template>
-  <div ref="dropdownRef" class="relative dropdown w-full"
+  <div ref="dropdownRef" class="relative dropdown w-full max-w-[150px]"
   :class="{ 'z-[100]': isOpen, 'z-[50]': !isOpen }">
     <button
       type="button"
-      class="dropdown-button bg-[#F3F3F3] border border-[#DBDEE3] text-[#727272] text-[18px] after-small px-3 py-1.5 pr-2 rounded-md h-[45px] w-full flex justify-between items-center 0 focus:outline-none focus:border-[#2B5BBB]"
+      class="dropdown-button bg-[#FEFEFE] border border-[#DBDEE3] text-[#727272] text-[18px] after-small px-3 py-1.5 pr-2 rounded-md h-[45px] w-full flex justify-between items-center 0 focus:outline-none focus:border-[#2B5BBB]"
       @click="toggleDropdown"
       :class="[!displayValue || displayValue === '선택하세요' ? 'bg-[#F3F3E5] text-[#AFAFAF]' : 'bg-[#FFFFFF] text-[#292929]']"
       >
