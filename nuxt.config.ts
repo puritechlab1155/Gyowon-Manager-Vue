@@ -10,8 +10,10 @@ export default defineNuxtConfig({
     ],
   ],
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css',
-  ],
+  build: {
+    transpile: ['vue-toastification'],
+  },
+  css: ['~/assets/css/main.css', 'vue-toastification/dist/index.css'],
   runtimeConfig: {
     public: {
       backendUrl: 'http://localhost:8000', //TODO for local development,
