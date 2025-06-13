@@ -26,6 +26,7 @@
 
 <script setup>
 definePageMeta({ middleware: 'auth' });
+const config = useRuntimeConfig()
 const getYear = () => new Date().getFullYear();
 const getSemester = () => {
   const month = new Date().getMonth() + 1
@@ -39,7 +40,8 @@ const token = useCookie('auth_token').value /// 토큰 가져오기
 const params = ref({ application_year: getYear(), semester: getSemester(), status: '' }) // 초기값 설정
 
 //통계 데이터 요청
-const { data, error } = await useFetch('http://localhost:8000/api/admin/statistic', {
+const { data, error } = await useFetch('/api/admin/statistic', {
+    baseURL: config.public.backendUrl,
     query: params,
     onRequest({ options }) { options.headers.set('Authorization', `Bearer ${token}`)},
     transform: (response) => { 
