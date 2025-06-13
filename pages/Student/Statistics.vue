@@ -25,39 +25,68 @@
 </template>
 
 <script setup>
+/**
+ * == 페이지 설정 ==
+ * 로그인 체크 - 미인증 시 로그인 페이지로 이동
+ */
 definePageMeta({ middleware: 'auth' });
-const config = useRuntimeConfig()
-const getYear = () => new Date().getFullYear();
+/**
+ * == 환경 설정 ==
+ * 백엔드 API URL 및 환경별 설정값 가져오기
+ * API 요청용 인증 토큰
+ */
+const config = useRuntimeConfig() 
+const token = useCookie('auth_token').value
+
+/**
+ * == 유틸리티 함수 ==
+ * 현재 년도 반환 (예: 2025), useInitialParam에서 사용
+ * 현재 월 기준 학기 판단 (1-2월: 동계, 3-6월: 1학기, 7-8월: 하계, 9-12월: 2학기), useInitialParam에서 사용 
+ */
+const getYear = () => new Date().getFullYear(); 
 const getSemester = () => {
   const month = new Date().getMonth() + 1
-  // 월 기준으로 학기 결정
   if (month <= 2) return '동계'
   if (month <= 6) return '1학기'
   if (month <= 8) return '하계'
   return '2학기'
 }
-const token = useCookie('auth_token').value /// 토큰 가져오기
-const params = ref({ application_year: getYear(), semester: getSemester(), status: '' }) // 초기값 설정
 
-//통계 데이터 요청
-const { data, error } = await useFetch('/api/admin/statistic', {
+/**
+ *  초기 파라미터 생성 함수
+ * @returns {Object} 초기 검색 조건
+ */
+const useInitialParams = () => ({
+  application_year: getYear(),  // 현재 년도
+  semester: getSemester(),      // 현재 학기  
+  status: ''                    // 전체 상태 (필터 없음)
+})
+
+// 반응형 파라미터 참조
+const params = ref(useInitialParams())
+
+// 관리자 통계 데이터 조회 (인증 토큰 Bearer Token 필요)
+const { data, error, pending } = await useFetch('/api/admin/statistic', {
     baseURL: config.public.backendUrl,
     query: params,
     onRequest({ options }) { options.headers.set('Authorization', `Bearer ${token}`)},
     transform: (response) => { 
         if (response && response.data && Array.isArray(response.data)) { return response.data }
         return []
+    },
+    onResponseError({ response }) {
+    console.error('Response error:', response.status)
     }
 })
 
-// computed를 사용한 안전한 데이터 접근
+// computed으로 사용한 안전한 데이터 접근
 const safeData = computed(() => {
     if (!data.value) return []
     if (Array.isArray(data.value)) return data.value
     return []
 })
 
-// 에러 처리
+// 파라미터 기본값 보장 (빈 값일 경우 현재 년도/학기로 복원)
 watchEffect(() => {
   if (!params.value.application_year) {
     params.value.application_year = getYear()
