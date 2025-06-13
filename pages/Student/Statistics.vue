@@ -36,6 +36,7 @@ definePageMeta({ middleware: 'auth' });
  * API 요청용 인증 토큰
  */
 const config = useRuntimeConfig() 
+const route = useRoute()
 const token = useCookie('auth_token').value
 
 /**
@@ -57,15 +58,15 @@ const getSemester = () => {
  * @returns {Object} 초기 검색 조건
  */
 const useInitialParams = () => ({
-  application_year: getYear(),  // 현재 년도
-  semester: getSemester(),      // 현재 학기  
-  status: ''                    // 전체 상태 (필터 없음)
+  application_year: route.query.application_year || getYear(),
+  semester: route.query.semester || getSemester(),
+  status: route.query.status || ''
 })
 
 // 반응형 파라미터 참조
 const params = ref(useInitialParams())
 
-// 관리자 통계 데이터 조회 (인증 토큰 Bearer Token 필요)
+// 관리자 통계 API 데이터 조회 (인증 토큰 Bearer Token 필요)
 const { data, error, pending } = await useFetch('/api/admin/statistic', {
     baseURL: config.public.backendUrl,
     query: params,
